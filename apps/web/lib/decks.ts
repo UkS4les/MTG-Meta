@@ -70,9 +70,10 @@ export function toSavedDeck(deck: UserDeck, cards: CardDatabase): SavedDeck {
 
 /** Os decks iniciais do Arena no formato da lista de decks. Sem formato: nem todos são válidos no Standard atual. */
 export function starterDecks(cards: CardDatabase): SavedDeck[] {
-  return ARENA_STARTER_DECKS.map((deck) =>
-    toSavedDeck({ id: `inicial-${cardSlug(deck.name)}`, name: deck.name, format: null, main: deck.main, sideboard: [], updatedAt: '' }, cards),
-  );
+  return ARENA_STARTER_DECKS.map((deck) => ({
+    ...toSavedDeck({ id: `inicial-${cardSlug(deck.name)}`, name: deck.name, format: null, main: deck.main, sideboard: [], updatedAt: '' }, cards),
+    subtitle: deck.namePt,
+  }));
 }
 
 export interface AnalyzeInput {

@@ -12,6 +12,8 @@ export interface SavedDeck {
   colors: Color[];
   /** Carta que ilustra o deck na lista. */
   cover: CardRef | null;
+  /** Segunda linha do nome na lista; nos decks iniciais do Arena, o nome traduzido. */
+  subtitle?: string;
 }
 
 /** Corpo de POST /api/decks e PUT /api/decks/:id. */

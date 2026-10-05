@@ -6,7 +6,9 @@ test('decks iniciais do Arena: 15 decks de 60 cartas, sem nomes ou cartas repeti
   assert.equal(ARENA_STARTER_DECKS.length, 15);
   assert.equal(ARENA_STARTER_DECKS.filter((d) => d.kind === 'mono').length, 5);
   assert.equal(new Set(ARENA_STARTER_DECKS.map((d) => d.name)).size, 15);
+  assert.equal(new Set(ARENA_STARTER_DECKS.map((d) => d.namePt)).size, 15);
   for (const deck of ARENA_STARTER_DECKS) {
+    assert.ok(deck.namePt.trim().length > 0 && deck.namePt !== deck.name, deck.name);
     assert.equal(deck.main.reduce((total, e) => total + e.quantity, 0), 60, deck.name);
     assert.equal(new Set(deck.main.map((e) => e.name)).size, deck.main.length, deck.name);
     assert.ok(deck.main.every((e) => e.quantity >= 1 && e.name.trim() === e.name), deck.name);

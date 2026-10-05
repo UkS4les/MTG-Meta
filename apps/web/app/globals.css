@@ -1722,6 +1722,13 @@ tr:hover .thumbs .card-img:last-child,
   overflow-wrap: anywhere;
 }
 
+.deck-subtitle {
+  margin-top: -2px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 .deck-card-text .mana {
   margin-left: 0;
 }

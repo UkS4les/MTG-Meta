@@ -62,6 +62,7 @@ function DeckCard({ deck, index, onOpen }: { deck: SavedDeck; index: number; onO
       <CardImage name="" imageId={deck.cover?.imageId ?? null} size="small" />
       <span className="deck-card-text">
         <strong>{deck.name}</strong>
+        {deck.subtitle && <span className="deck-subtitle">{deck.subtitle}</span>}
         <ColorPips colors={deck.colors} />
         <span className="small muted">
           {deck.format && FORMATS[deck.format as keyof typeof FORMATS] ? `${FORMATS[deck.format as keyof typeof FORMATS]} · ` : ''}

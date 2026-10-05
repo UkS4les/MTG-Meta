@@ -3,6 +3,8 @@ import type { DeckEntry } from './types.ts';
 export interface StarterDeck {
   /** Nome do deck como aparece no Arena. */
   name: string;
+  /** Tradução nossa do nome, para quem não lê inglês. Não é o nome oficial do Arena em português. */
+  namePt: string;
   /** Os cinco de uma cor vêm do tutorial; os dez de duas cores são trocados quando o Standard gira. */
   kind: 'mono' | 'dual';
   main: DeckEntry[];
@@ -20,6 +22,7 @@ export interface StarterDeck {
 export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   {
     name: 'Keep the Peace',
+    namePt: 'Mantenha a Paz',
     kind: 'mono',
     main: [
       { name: 'Charmed Stray', quantity: 4 },
@@ -44,6 +47,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Aerial Domination',
+    namePt: 'Domínio Aéreo',
     kind: 'mono',
     main: [
       { name: 'Wall of Runes', quantity: 2 },
@@ -68,6 +72,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Cold-Blooded Killers',
+    namePt: 'Assassinos a Sangue Frio',
     kind: 'mono',
     main: [
       { name: 'Sanitarium Skeleton', quantity: 2 },
@@ -92,6 +97,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Goblins Everywhere!',
+    namePt: 'Goblins por Toda Parte!',
     kind: 'mono',
     main: [
       { name: 'Tin Street Cadet', quantity: 3 },
@@ -115,6 +121,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Large and in Charge',
+    namePt: 'Grande e no Comando',
     kind: 'mono',
     main: [
       { name: 'Jungle Delver', quantity: 3 },
@@ -138,6 +145,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Graveyard Gifts',
+    namePt: 'Presentes do Cemitério',
     kind: 'dual',
     main: [
       { name: 'Kiora, the Rising Tide', quantity: 1 },
@@ -165,6 +173,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Morbid Machinations',
+    namePt: 'Maquinações Mórbidas',
     kind: 'dual',
     main: [
       { name: 'Infestation Sage', quantity: 2 },
@@ -195,6 +204,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Reckless Raid',
+    namePt: 'Investida Imprudente',
     kind: 'dual',
     main: [
       { name: 'Diregraf Ghoul', quantity: 4 },
@@ -222,6 +232,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Arcane Aerialists',
+    namePt: 'Voadores Arcanos',
     kind: 'dual',
     main: [
       { name: "Healer's Hawk", quantity: 2 },
@@ -252,6 +263,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Might of the Legion',
+    namePt: 'Poder da Legião',
     kind: 'dual',
     main: [
       { name: 'Frenzied Goblin', quantity: 2 },
@@ -282,6 +294,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Cat Attack',
+    namePt: 'Ataque dos Gatos',
     kind: 'dual',
     main: [
       { name: 'Savannah Lions', quantity: 3 },
@@ -309,6 +322,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Path of Power',
+    namePt: 'Caminho do Poder',
     kind: 'dual',
     main: [
       { name: 'Halana and Alena, Partners', quantity: 1 },
@@ -340,6 +354,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Wondrous Wizardry',
+    namePt: 'Feitiçaria Maravilhosa',
     kind: 'dual',
     main: [
       { name: 'Drake Hatcher', quantity: 1 },
@@ -367,6 +382,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Vampiric Hunger',
+    namePt: 'Fome Vampírica',
     kind: 'dual',
     main: [
       { name: 'Hinterland Sanctifier', quantity: 2 },
@@ -397,6 +413,7 @@ export const ARENA_STARTER_DECKS: readonly StarterDeck[] = [
   },
   {
     name: 'Learn from the Land',
+    namePt: 'Aprenda com a Terra',
     kind: 'dual',
     main: [
       { name: 'Mischievous Mystic', quantity: 2 },
