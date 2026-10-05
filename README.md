@@ -37,15 +37,19 @@ e acompanha as suas partidas do Arena. Gratuito, sem cadastro obrigatório.
 
 <table>
 <tr>
+<td width="50%"><img src="docs/imagens/meta.png" alt="Meta de Modern com as cores azul e vermelho marcadas: os arquétipos que cabem nelas ficam em destaque e os outros, apagados"></td>
+<td width="50%"><img src="docs/imagens/montar.png" alt="O que posso montar: arquétipos ordenados por cobertura, com miniaturas das cartas, o anel de porcentagem e a lista de cartas que faltam"></td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/imagens/cartas.png" alt="Aba Cartas: busca por nome, tipo, raridade e cor, com a grade de cartas e o preço de cada uma"></td>
 <td width="50%"><img src="docs/imagens/carta.png" alt="Página de uma carta: imagem, custo de mana, preço, raridade em papel e no Arena, texto e os decks do meta que a usam"></td>
 </tr>
 <tr>
-<td colspan="2"><img src="docs/imagens/decks.png" alt="Editor de decks: nome, formato, anel de cobertura da coleção, busca de cartas e a lista em imagens com a quantidade de cada carta"></td>
+<td width="50%"><img src="docs/imagens/decks.png" alt="Editor de decks: anel de cobertura da coleção, busca de cartas e a lista em imagens com a quantidade de cada carta e as que faltam"></td>
+<td width="50%"><img src="docs/imagens/iniciais.png" alt="Aba Decks: os decks iniciais do Arena, cada um com o nome em inglês, o nome em português, as cores e uma carta de capa"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/imagens/montar.png" alt="O que posso montar: arquétipos ordenados por cobertura, com o anel de porcentagem e a lista de cartas que faltam"></td>
-<td width="50%"><img src="docs/imagens/partidas.png" alt="Minhas partidas: envio do log e blocos com a taxa de vitória geral, jogando primeiro e comprando primeiro"></td>
+<td colspan="2"><img src="docs/imagens/partidas.png" alt="Minhas partidas: envio do log e blocos com a taxa de vitória geral, jogando primeiro e comprando primeiro"></td>
 </tr>
 </table>
 
