@@ -1,0 +1,26 @@
+# Dependências e saídas de build
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Dados locais: banco (contas, coleções, partidas), cartas baixadas e segredos gerados
+data/*
+!data/.gitkeep
+.mtga-vazio/
+
+# Configuração local e chaves (o modelo é o .env.example)
+.env
+.env.*
+!.env.example
+
+# Logs do Arena: têm o nome de quem jogou
+Player*.log
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

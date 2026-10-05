@@ -1,0 +1,33 @@
+{
+  "name": "mtg-meta",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Meta, coleção e cobertura de decks para Magic: The Gathering (papel, MTGO e Arena)",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "jobs"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @mtg-meta/web",
+    "build": "npm run build -w @mtg-meta/web",
+    "start": "npm run start -w @mtg-meta/web",
+    "test": "tsx --test packages/*/tests/*.test.ts jobs/tests/*.test.ts apps/tracker/tests/*.test.ts",
+    "typecheck": "tsc -p packages/core && tsc -p packages/db && tsc -p jobs && tsc -p apps/tracker && tsc -p apps/web",
+    "cartas:baixar": "tsx packages/core/scripts/baixar-scryfall.ts",
+    "meta:ingerir": "tsx jobs/src/cli.ts",
+    "tracker": "tsx apps/tracker/src/cli.ts",
+    "arquetipo:renomear": "tsx jobs/src/renomear.ts",
+    "cobertura": "tsx packages/core/src/cli.ts",
+    "exemplo": "tsx packages/core/src/cli.ts --cartas packages/core/exemplos/cartas-exemplo.json --colecao packages/core/exemplos/colecao-arena.txt --decks packages/core/exemplos/decks --plataforma arena"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

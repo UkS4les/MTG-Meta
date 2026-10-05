@@ -1,0 +1,14 @@
+{
+  "name": "@mtg-meta/jobs",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Ingestão de torneios do MTGO, classificação de arquétipos e agregação de meta",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@mtg-meta/core": "*",
+    "@mtg-meta/db": "*"
+  }
+}

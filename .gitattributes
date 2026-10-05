@@ -1,0 +1,8 @@
+# Os atalhos de um clique só funcionam com o fim de linha do sistema a que se destinam,
+# não importa em que sistema o repositório foi baixado.
+* text=auto
+*.bat text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf
+*.mjs text eol=lf
+*.png binary

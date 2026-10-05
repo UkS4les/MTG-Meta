@@ -1,0 +1,675 @@
+{
+ "meta": {
+  "source": "example",
+  "generatedAt": "2026-10-05T00:00:00.000Z",
+  "note": "Dados ilustrativos para testar o motor. Raridades e preços NÃO são reais; use npm run cartas:baixar."
+ },
+ "cards": [
+  {
+   "name": "Absorb",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1
+  },
+  {
+   "name": "Adarkar Wastes",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 2
+  },
+  {
+   "name": "Binding the Old Gods",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.4
+  },
+  {
+   "name": "Bloodthirsty Adversary",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "mythic",
+   "paperRarity": "mythic",
+   "priceUsd": 5
+  },
+  {
+   "name": "Boseiju, Who Endures",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 8
+  },
+  {
+   "name": "Brainstorm",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 1
+  },
+  {
+   "name": "Cling to Dust",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.3
+  },
+  {
+   "name": "Consider",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.2
+  },
+  {
+   "name": "Counterspell",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "common",
+   "priceUsd": 1
+  },
+  {
+   "name": "Disdainful Stroke",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.1
+  },
+  {
+   "name": "Dovin's Veto",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.3
+  },
+  {
+   "name": "Dragon's Rage Channeler",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 1.5
+  },
+  {
+   "name": "Duress",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.1
+  },
+  {
+   "name": "Eidolon of the Great Revel",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 2.5
+  },
+  {
+   "name": "Elspeth Conquers Death",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1
+  },
+  {
+   "name": "Expressive Iteration",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.5
+  },
+  {
+   "name": "Fatal Push",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 2
+  },
+  {
+   "name": "Fateful Absence",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 0.8
+  },
+  {
+   "name": "Force of Will",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": null,
+   "paperRarity": "uncommon",
+   "priceUsd": 80
+  },
+  {
+   "name": "Forest",
+   "faceNames": [],
+   "typeLine": "Basic Land — Forest",
+   "freeBasic": true,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.05
+  },
+  {
+   "name": "Glacial Fortress",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1.5
+  },
+  {
+   "name": "Go for the Throat",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.5
+  },
+  {
+   "name": "Graveyard Trespasser // Graveyard Glutton",
+   "faceNames": [
+    "Graveyard Trespasser",
+    "Graveyard Glutton"
+   ],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 0.8
+  },
+  {
+   "name": "Hallowed Fountain",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 9
+  },
+  {
+   "name": "Haywire Mite",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.8
+  },
+  {
+   "name": "Island",
+   "faceNames": [],
+   "typeLine": "Basic Land — Island",
+   "freeBasic": true,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.05
+  },
+  {
+   "name": "Kumano Faces Kakkazan // Etching of Kumano",
+   "faceNames": [
+    "Kumano Faces Kakkazan",
+    "Etching of Kumano"
+   ],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.4
+  },
+  {
+   "name": "Light Up the Stage",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.3
+  },
+  {
+   "name": "Lightning Bolt",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "common",
+   "priceUsd": 1
+  },
+  {
+   "name": "Lightning Strike",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.1
+  },
+  {
+   "name": "Liliana of the Veil",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "mythic",
+   "paperRarity": "mythic",
+   "priceUsd": 15
+  },
+  {
+   "name": "Llanowar Elves",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.2
+  },
+  {
+   "name": "Llanowar Wastes",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1
+  },
+  {
+   "name": "Memory Deluge",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1.5
+  },
+  {
+   "name": "Mishra's Bauble",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 1
+  },
+  {
+   "name": "Monastery Swiftspear",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.5
+  },
+  {
+   "name": "Mountain",
+   "faceNames": [],
+   "typeLine": "Basic Land — Mountain",
+   "freeBasic": true,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.05
+  },
+  {
+   "name": "Murktide Regent",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "mythic",
+   "paperRarity": "mythic",
+   "priceUsd": 20
+  },
+  {
+   "name": "Mystical Dispute",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.5
+  },
+  {
+   "name": "Otawara, Soaring City",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 4
+  },
+  {
+   "name": "Overgrown Tomb",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 10
+  },
+  {
+   "name": "Plains",
+   "faceNames": [],
+   "typeLine": "Basic Land — Plains",
+   "freeBasic": true,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.05
+  },
+  {
+   "name": "Play with Fire",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.25
+  },
+  {
+   "name": "Polluted Delta",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 20
+  },
+  {
+   "name": "Ponder",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 2
+  },
+  {
+   "name": "Preordain",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.5
+  },
+  {
+   "name": "Rest in Peace",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 3
+  },
+  {
+   "name": "Roiling Vortex",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.5
+  },
+  {
+   "name": "Scalding Tarn",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 20
+  },
+  {
+   "name": "Shark Typhoon",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 2
+  },
+  {
+   "name": "Sheoldred, the Apocalypse",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "mythic",
+   "paperRarity": "mythic",
+   "priceUsd": 60
+  },
+  {
+   "name": "Smash to Smithereens",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.15
+  },
+  {
+   "name": "Sokenzan, Crucible of Defiance",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 3
+  },
+  {
+   "name": "Soul-Scar Mage",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1
+  },
+  {
+   "name": "Stoke the Flames",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "uncommon",
+   "paperRarity": "uncommon",
+   "priceUsd": 0.4
+  },
+  {
+   "name": "Sunfall",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1.5
+  },
+  {
+   "name": "Supreme Verdict",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 2
+  },
+  {
+   "name": "Swamp",
+   "faceNames": [],
+   "typeLine": "Basic Land — Swamp",
+   "freeBasic": true,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.05
+  },
+  {
+   "name": "Teferi, Hero of Dominaria",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "mythic",
+   "paperRarity": "mythic",
+   "priceUsd": 8
+  },
+  {
+   "name": "The Wandering Emperor",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "mythic",
+   "paperRarity": "mythic",
+   "priceUsd": 12
+  },
+  {
+   "name": "Thoughtseize",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 10
+  },
+  {
+   "name": "Tireless Tracker",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 1.5
+  },
+  {
+   "name": "Unholy Heat",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "common",
+   "paperRarity": "common",
+   "priceUsd": 0.25
+  },
+  {
+   "name": "Volcanic Island",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": null,
+   "paperRarity": "rare",
+   "priceUsd": 500
+  },
+  {
+   "name": "Wasteland",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": null,
+   "paperRarity": "uncommon",
+   "priceUsd": 25
+  },
+  {
+   "name": "Woodland Cemetery",
+   "faceNames": [],
+   "typeLine": "",
+   "freeBasic": false,
+   "anyNumber": false,
+   "arenaRarity": "rare",
+   "paperRarity": "rare",
+   "priceUsd": 2
+  }
+ ]
+}

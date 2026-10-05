@@ -1,0 +1,10 @@
+{
+  "name": "@mtg-meta/tracker",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Acompanha o Player.log do MTG Arena e envia as partidas terminadas para o site",
+  "type": "module",
+  "dependencies": {
+    "@mtg-meta/core": "*"
+  }
+}

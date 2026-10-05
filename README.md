@@ -13,6 +13,7 @@ e acompanha as suas partidas do Arena. Gratuito, sem cadastro obrigatório.
 ![Postgres](https://img.shields.io/badge/Postgres-PGlite-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-um%20clique-2496ED?logo=docker&logoColor=white)
 ![Testes](https://img.shields.io/badge/testes-84%20passando-2ea44f)
+![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-yellow)
 
 <img src="docs/imagens/inicio.png" alt="Página inicial: chamada para importar a coleção e tabela do meta de Standard com a participação de cada arquétipo" width="820">
 
@@ -183,6 +184,10 @@ Monorepo com npm workspaces. Os pacotes são TypeScript puro, sem etapa de build
 - Cartas e preços: [Scryfall](https://scryfall.com/docs/api/bulk-data). Não pode haver paywall sobre esses dados.
 - Torneios: [mtgo.com](https://www.mtgo.com/decklists), via [modometa/modometa-mtgo-data](https://github.com/modometa/modometa-mtgo-data) (licença MIT).
 - Ideia do acompanhamento de partidas: [Tapps Tracker](https://github.com/pattont/MTGA-Tapps).
+
+## 📄 Licença
+
+Código sob a licença [MIT](LICENSE). Os dados de cartas, preços e torneios pertencem às suas fontes e seguem as regras delas.
 
 ---
 

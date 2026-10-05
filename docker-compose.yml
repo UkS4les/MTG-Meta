@@ -1,0 +1,37 @@
+# Sobe tudo com:  docker compose up -d --build     (ou dois cliques em iniciar.bat / iniciar.command / iniciar.sh)
+# Os dados (contas, coleções, partidas, torneios) ficam no volume "dados" e sobrevivem a atualizações.
+services:
+  site:
+    build: .
+    image: mtg-meta
+    restart: unless-stopped
+    ports:
+      - "${PORTA:-3000}:3000"
+    environment:
+      # Opcionais; veja .env.example.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      INGEST_DAYS: ${INGEST_DAYS:-30}
+    volumes:
+      - dados:/app/data
+
+  # Acompanha o Arena e envia as partidas. Só sobe quando pedido:
+  #   docker compose --profile tracker up -d      (ou tracker.bat / tracker.command / tracker.sh)
+  # Precisa de MTG_META_CHAVE (gerada na página Conta) e MTGA_LOG_DIR (pasta do Player.log) no arquivo .env.
+  tracker:
+    profiles: [tracker]
+    image: mtg-meta
+    restart: unless-stopped
+    command: ["npm", "run", "--silent", "tracker", "--", "--log", "/mtga"]
+    environment:
+      MTG_META_SERVIDOR: http://site:3000
+      MTG_META_CHAVE: ${MTG_META_CHAVE:-}
+    volumes:
+      - "${MTGA_LOG_DIR:-./.mtga-vazio}:/mtga:ro"
+      - tracker:/home/node/.config
+    depends_on:
+      site:
+        condition: service_healthy
+
+volumes:
+  dados:
+  tracker:

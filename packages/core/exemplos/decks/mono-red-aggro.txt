@@ -1,0 +1,19 @@
+About
+Name Mono Red Aggro
+
+Deck
+4 Monastery Swiftspear (BRO) 144
+4 Kumano Faces Kakkazan (NEO) 152
+4 Soul-Scar Mage (WAR) 148
+4 Bloodthirsty Adversary (MID) 129
+4 Play with Fire (MID) 154
+4 Lightning Strike (M19) 152
+4 Light Up the Stage (RNA) 107
+4 Eidolon of the Great Revel (A25) 129
+4 Stoke the Flames (M15) 165
+4 Sokenzan, Crucible of Defiance (NEO) 276
+20 Mountain (DMU) 269
+
+Sideboard
+2 Roiling Vortex (ZNR) 156
+3 Smash to Smithereens (ALA) 117
