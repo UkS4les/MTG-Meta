@@ -1,5 +1,5 @@
 import type { CardDatabase } from './card-db.ts';
-import type { CardInfo, Decklist } from './types.ts';
+import { COLORS, type CardInfo, type Color, type Decklist } from './types.ts';
 
 /**
  * Cartas não-terreno do main de um deck (ou a média delas em um arquétipo): nome → cópias.
@@ -27,6 +27,31 @@ export function deckFeatures(deck: Decklist, db: CardDatabase): Features {
     features.set(name, (features.get(name) ?? 0) + entry.quantity);
   }
   return features;
+}
+
+/** Uma cor precisa estar em pelo menos esta fração das cópias não-terreno para contar como cor do deck. */
+const COLOR_SHARE = 0.1;
+
+/**
+ * Cores de um deck a partir das cartas não-terreno (nome → cópias): entram as cores presentes em
+ * pelo menos 10% das cópias, para uma carta solta de outra cor não mudar a cor do deck.
+ * Serve tanto para uma lista quanto para a assinatura de um arquétipo.
+ */
+export function deckColors(cards: Iterable<[string, number]>, db: CardDatabase): Color[] {
+  const copies = new Map<Color, number>();
+  let total = 0;
+  for (const [name, quantity] of cards) {
+    const card = db.get(name);
+    if (!card || isLand(card)) continue;
+    total += quantity;
+    for (const color of card.colors ?? []) copies.set(color, (copies.get(color) ?? 0) + quantity);
+  }
+  return COLORS.filter((color) => total > 0 && (copies.get(color) ?? 0) / total >= COLOR_SHARE);
+}
+
+/** O deck cabe nas cores escolhidas? Decks incolores cabem em qualquer escolha. */
+export function fitsColors(deck: readonly Color[], chosen: readonly Color[]): boolean {
+  return deck.every((color) => chosen.includes(color));
 }
 
 /** Jaccard ponderada: soma dos mínimos ÷ soma dos máximos, de 0 (nada em comum) a 1 (idênticos). */

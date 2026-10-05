@@ -8,3 +8,5 @@ export * from './archetypes.ts';
 export * from './mtgo.ts';
 export * from './formats.ts';
 export * from './arena-log.ts';
+export * from './images.ts';
+export * from './starter-decks.ts';

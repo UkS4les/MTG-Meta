@@ -1,11 +1,20 @@
 import type { CardInfo, Rarity } from './types.ts';
-import { RARITIES } from './types.ts';
+import { COLORS, RARITIES } from './types.ts';
 
 /** Só os campos do objeto Card do Scryfall que o motor usa. */
 export interface ScryfallCard {
   id: string;
   oracle_id?: string;
   arena_id?: number;
+  color_identity?: string[];
+  image_status?: string;
+  released_at?: string;
+  promo?: boolean;
+  full_art?: boolean;
+  textless?: boolean;
+  border_color?: string;
+  frame_effects?: string[];
+  image_uris?: { normal?: string };
   name: string;
   lang?: string;
   /** Nome impresso quando difere do oficial (cartas renomeadas no MTGO/Arena, outros idiomas). */
@@ -18,8 +27,9 @@ export interface ScryfallCard {
   set_type?: string;
   type_line?: string;
   oracle_text?: string;
+  mana_cost?: string;
   prices?: { usd?: string | null; usd_foil?: string | null; usd_etched?: string | null };
-  card_faces?: { name: string; printed_name?: string; flavor_name?: string; oracle_id?: string; type_line?: string; oracle_text?: string }[];
+  card_faces?: { name: string; mana_cost?: string; image_uris?: { normal?: string }; printed_name?: string; flavor_name?: string; oracle_id?: string; type_line?: string; oracle_text?: string }[];
 }
 
 /** Layouts que não são cartas jogáveis em deck (tokens, emblemas, cartas de arte...). */
@@ -60,6 +70,24 @@ function lowerRarity(a: Rarity | null, b: Rarity | null): Rarity | null {
   return RARITIES.indexOf(a) <= RARITIES.indexOf(b) ? a : b;
 }
 
+/**
+ * Nota de uma impressão como "a cara" da carta: quanto maior, melhor.
+ * Vence a digitalização em alta resolução de uma impressão comum, em inglês, com o nome oficial;
+ * entre iguais, a mais recente. Zero = sem imagem utilizável.
+ */
+function imageScore(card: ScryfallCard): number {
+  const hasImage = card.image_uris?.normal ?? card.card_faces?.[0]?.image_uris?.normal;
+  if (!hasImage || card.image_status === 'missing' || card.image_status === 'placeholder') return 0;
+  let score = 1;
+  if (card.image_status === 'highres_scan') score += 8;
+  if (!card.lang || card.lang === 'en') score += 16;
+  if (!card.printed_name && !card.flavor_name) score += 4;
+  if (!card.promo && !card.full_art && !card.textless && !card.frame_effects?.length && card.border_color !== 'borderless') score += 2;
+  // Desempate pela data: o ano entra como fração para nunca passar por cima dos critérios acima.
+  const year = Number.parseInt(card.released_at?.slice(0, 4) ?? '', 10);
+  return score + (Number.isFinite(year) ? Math.min(Math.max(year - 1990, 0), 99) / 100 : 0);
+}
+
 function parsePrice(card: ScryfallCard): number | null {
   const raw = card.prices?.usd ?? card.prices?.usd_foil ?? card.prices?.usd_etched ?? null;
   if (raw === null || raw === undefined) return null;
@@ -73,6 +101,7 @@ function parsePrice(card: ScryfallCard): number | null {
  */
 export class ScryfallAggregator {
   private readonly byOracle = new Map<string, CardInfo>();
+  private readonly imageScores = new Map<string, number>();
   skipped = 0;
 
   add(card: ScryfallCard): void {
@@ -102,6 +131,9 @@ export class ScryfallAggregator {
         arenaRarity: null,
         paperRarity: null,
         priceUsd: null,
+        colors: COLORS.filter((color) => card.color_identity?.includes(color)),
+        manaCost: card.mana_cost ?? (card.card_faces ?? []).map((f) => f.mana_cost ?? '').filter(Boolean).join(' // '),
+        text: texts.filter(Boolean).join('\n//\n'),
       };
       this.byOracle.set(key, info);
     }
@@ -118,6 +150,11 @@ export class ScryfallAggregator {
       }
     }
 
+    const score = imageScore(card);
+    if (score > (this.imageScores.get(key) ?? 0)) {
+      this.imageScores.set(key, score);
+      info.imageId = card.id;
+    }
     if (card.arena_id && !info.arenaIds?.includes(card.arena_id)) (info.arenaIds ??= []).push(card.arena_id);
     if (onArena) info.arenaRarity = lowerRarity(info.arenaRarity, rarity);
     if (onPaper) info.paperRarity = lowerRarity(info.paperRarity, rarity);

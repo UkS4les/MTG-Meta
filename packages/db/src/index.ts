@@ -5,3 +5,4 @@ export * from './collections.ts';
 export * from './decks.ts';
 export * from './meta.ts';
 export * from './matches.ts';
+export * from './user-decks.ts';

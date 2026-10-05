@@ -140,4 +140,19 @@ export const MIGRATIONS: readonly string[] = [
     last_used_at timestamptz
   );
   `,
+  `
+  -- Decks criados pela própria pessoa no site.
+  create table user_decks (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references users(id) on delete cascade,
+    name text not null,
+    format text,
+    -- Listas de { name, quantity }.
+    main jsonb not null,
+    sideboard jsonb not null default '[]',
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  );
+  create index user_decks_user on user_decks(user_id, updated_at desc);
+  `,
 ];

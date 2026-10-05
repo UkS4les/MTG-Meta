@@ -5,9 +5,11 @@ import { usePathname } from 'next/navigation';
 
 const LINKS = [
   { href: '/meta/standard', label: 'Meta', match: (path: string) => path === '/' || path.startsWith('/meta') },
+  { href: '/cartas', label: 'Cartas', match: (path: string) => path.startsWith('/cartas') },
   { href: '/montar', label: 'O que posso montar', match: (path: string) => path.startsWith('/montar') },
-  { href: '/colecao', label: 'Minha coleção', match: (path: string) => path.startsWith('/colecao') },
-  { href: '/partidas', label: 'Minhas partidas', match: (path: string) => path.startsWith('/partidas') },
+  { href: '/colecao', label: 'Coleção', match: (path: string) => path.startsWith('/colecao') },
+  { href: '/decks', label: 'Decks', match: (path: string) => path.startsWith('/decks') },
+  { href: '/partidas', label: 'Partidas', match: (path: string) => path.startsWith('/partidas') },
 ];
 
 export function NavLinks({ loggedIn }: { loggedIn: boolean }) {

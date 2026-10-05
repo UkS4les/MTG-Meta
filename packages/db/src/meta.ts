@@ -1,4 +1,4 @@
-import type { DeckEntry, Decklist } from '@mtg-meta/core';
+import type { DeckEntry, Decklist, Signature } from '@mtg-meta/core';
 import type { Db } from './client.ts';
 import { PLATFORM_MTGO, type MetaPeriod } from './decks.ts';
 
@@ -10,17 +10,19 @@ export interface MetaRow {
   decks: number;
   /** De 0 a 1. */
   share: number;
+  /** Carta → média de cópias; vazio na linha dos decks sem arquétipo. */
+  signature: Signature;
 }
 
 export async function getMeta(db: Db, format: string, period: MetaPeriod): Promise<MetaRow[]> {
-  const rows = await db.query<{ archetype_id: number | null; name: string | null; auto_named: boolean | null; decks: number; share: number }>(
-    `select s.archetype_id, a.name, a.auto_named, s.decks, s.share
+  const rows = await db.query<{ archetype_id: number | null; name: string | null; auto_named: boolean | null; decks: number; share: number; signature: Signature | null }>(
+    `select s.archetype_id, a.name, a.auto_named, s.decks, s.share, a.signature
      from meta_snapshots s left join archetypes a on a.id = s.archetype_id
      where s.format = $1 and s.platform = $2 and s.period_days = $3
      order by (s.archetype_id is null), s.decks desc, a.name`,
     [format, PLATFORM_MTGO, period],
   );
-  return rows.map((r) => ({ archetypeId: r.archetype_id, name: r.name, autoNamed: r.auto_named ?? false, decks: r.decks, share: r.share }));
+  return rows.map((r) => ({ archetypeId: r.archetype_id, name: r.name, autoNamed: r.auto_named ?? false, decks: r.decks, share: r.share, signature: r.signature ?? {} }));
 }
 
 export interface FormatStatus {
@@ -68,12 +70,13 @@ export interface ArchetypeDeck {
   share: number;
   decks: number;
   deck: Decklist;
+  signature: Signature;
 }
 
 /** Uma lista representativa por arquétipo do formato, com a participação dele no meta. */
 export async function getArchetypeDecks(db: Db, format: string, period: MetaPeriod): Promise<ArchetypeDeck[]> {
-  const rows = await db.query<{ id: number; name: string; auto_named: boolean; share: number; decks: number; cards: CardRow[] | null }>(
-    `select a.id, a.name, a.auto_named, s.share, s.decks, ${CARDS_JSON} as cards
+  const rows = await db.query<{ id: number; name: string; auto_named: boolean; share: number; decks: number; cards: CardRow[] | null; signature: Signature }>(
+    `select a.id, a.name, a.auto_named, s.share, s.decks, a.signature, ${CARDS_JSON} as cards
      from meta_snapshots s
      join archetypes a on a.id = s.archetype_id
      join decks d on d.id = a.sample_deck_id
@@ -88,7 +91,31 @@ export async function getArchetypeDecks(db: Db, format: string, period: MetaPeri
     share: r.share,
     decks: r.decks,
     deck: toDecklist(r.name, format, r.cards ?? []),
+    signature: r.signature,
   }));
+}
+
+export interface ArchetypeUsage {
+  id: number;
+  format: string;
+  name: string;
+  /** Média de cópias da carta no main das listas do arquétipo. */
+  copies: number;
+  /** Participação do arquétipo no meta dos últimos 30 dias (0 se não apareceu no período). */
+  share: number;
+}
+
+/** Arquétipos que usam a carta (pelo nome oficial), dos mais presentes no meta para os menos. */
+export async function getArchetypesUsingCard(db: Db, cardName: string): Promise<ArchetypeUsage[]> {
+  const rows = await db.query<{ id: number; format: string; name: string; copies: number; share: number | null }>(
+    `select a.id, a.format, a.name, (a.signature ->> $1)::real as copies, s.share
+     from archetypes a
+     left join meta_snapshots s on s.archetype_id = a.id and s.platform = $2 and s.period_days = 30
+     where jsonb_exists(a.signature, $1)
+     order by s.share desc nulls last, a.name`,
+    [cardName, PLATFORM_MTGO],
+  );
+  return rows.map((r) => ({ id: r.id, format: r.format, name: r.name, copies: r.copies, share: r.share ?? 0 }));
 }
 
 export async function getDeck(db: Db, deckId: number, name = 'Deck'): Promise<Decklist | null> {

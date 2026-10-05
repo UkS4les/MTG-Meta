@@ -3,6 +3,11 @@ import { after, before, describe, it } from 'node:test';
 import { parseDecklist, type Tournament } from '@mtg-meta/core';
 import {
   collectionSummaries,
+  getArchetypesUsingCard,
+  createUserDeck,
+  deleteUserDeck,
+  listUserDecks,
+  updateUserDeck,
   createApiToken,
   getApiTokenInfo,
   getApiTokenUser,
@@ -237,5 +242,61 @@ describe('chave do tracker', () => {
     const third = await createApiToken(db, user.id);
     await deleteUser(db, user.id);
     assert.equal(await getApiTokenUser(db, third), null);
+  });
+});
+
+describe('decks da pessoa', () => {
+  const input = (name: string) => ({ name, format: 'standard', main: [{ name: "Lim-Dûl's Vault", quantity: 4 }], sideboard: [{ name: 'Opt', quantity: 2 }] });
+
+  it('cria, lista do mais recente para o mais antigo, atualiza e apaga', async () => {
+    const user = (await createUser(db, 'joao@exemplo.com', 'senha-segura'))!;
+    const first = (await createUserDeck(db, user.id, input('Primeiro')))!;
+    const second = (await createUserDeck(db, user.id, { ...input('Segundo'), format: null }))!;
+    assert.deepEqual(first.main, [{ name: "Lim-Dûl's Vault", quantity: 4 }]);
+    assert.equal(second.format, null);
+
+    await db.query(`update user_decks set updated_at = now() - interval '1 hour' where id = $1`, [second.id]);
+    const updated = await updateUserDeck(db, user.id, first.id, { name: 'Renomeado', format: 'modern', main: [], sideboard: [] });
+    assert.deepEqual([updated?.name, updated?.format, updated?.main], ['Renomeado', 'modern', []]);
+    assert.deepEqual((await listUserDecks(db, user.id)).map((d) => d.name), ['Renomeado', 'Segundo']);
+
+    assert.equal(await deleteUserDeck(db, user.id, second.id), true);
+    assert.equal(await deleteUserDeck(db, user.id, second.id), false);
+    assert.equal((await listUserDecks(db, user.id)).length, 1);
+  });
+
+  it('ninguém mexe no deck de outra conta, e identificador estranho não dá erro', async () => {
+    const owner = (await createUser(db, 'karen@exemplo.com', 'senha-segura'))!;
+    const other = (await createUser(db, 'leo@exemplo.com', 'senha-segura'))!;
+    const deck = (await createUserDeck(db, owner.id, input('Meu')))!;
+    assert.equal(await updateUserDeck(db, other.id, deck.id, input('Roubado')), null);
+    assert.equal(await deleteUserDeck(db, other.id, deck.id), false);
+    assert.equal(await updateUserDeck(db, owner.id, 'nao-e-uuid', input('x')), null);
+    assert.equal(await deleteUserDeck(db, owner.id, "'; drop table users; --"), false);
+    assert.equal((await listUserDecks(db, owner.id))[0]!.name, 'Meu');
+
+    await deleteUser(db, owner.id);
+    assert.equal((await db.query('select 1 from user_decks where user_id = $1', [owner.id])).length, 0);
+  });
+
+  it('para de criar no limite', async () => {
+    const user = (await createUser(db, 'mari@exemplo.com', 'senha-segura'))!;
+    await db.query(`insert into user_decks (user_id, name, main) select $1, 'd' || n, '[]' from generate_series(1, 200) n`, [user.id]);
+    assert.equal(await createUserDeck(db, user.id, input('Demais')), null);
+  });
+});
+
+describe('arquétipos que usam uma carta', () => {
+  it('acha pelo nome exato, com a média de cópias, do mais presente para o menos', async () => {
+    const insert = async (name: string, signature: object) =>
+      (await db.query<{ id: number }>(`insert into archetypes (format, name, signature) values ('pauper', $1, $2::jsonb) returning id`, [name, JSON.stringify(signature)]))[0]!.id;
+    const big = await insert('Grande', { "Lim-Dûl's Vault": 3.5, Opt: 4 });
+    const small = await insert('Pequeno', { "Lim-Dûl's Vault": 1 });
+    await insert('Sem a carta', { Opt: 4 });
+    await db.query(`insert into meta_snapshots (format, platform, period_days, archetype_id, decks, share) values ('pauper', 'mtgo', 30, $1, 10, 0.2), ('pauper', 'mtgo', 7, $1, 3, 0.9)`, [big]);
+
+    const usage = await getArchetypesUsingCard(db, "Lim-Dûl's Vault");
+    assert.deepEqual(usage.map((u) => [u.id, u.copies, Math.round(u.share * 10) / 10]), [[big, 3.5, 0.2], [small, 1, 0]]);
+    assert.deepEqual(await getArchetypesUsingCard(db, 'lim-dul'), []);
   });
 });

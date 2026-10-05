@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   buildSignature,
+  deckColors,
+  fitsColors,
   classifyDeck,
   clusterDecks,
   deckFeatures,
@@ -11,7 +13,10 @@ import {
   type Features,
 } from '../src/archetypes.ts';
 import { parseDecklist } from '../src/parse-deck.ts';
-import { testDb } from './helpers.ts';
+import { CardDatabase } from '../src/card-db.ts';
+import { cardImageUrl } from '../src/images.ts';
+import { cardSlug } from '../src/normalize.ts';
+import { card, testDb } from './helpers.ts';
 
 const f = (cards: Record<string, number>): Features => new Map(Object.entries(cards));
 
@@ -97,4 +102,49 @@ test('deckKey não depende da ordem das cartas', () => {
   const c = parseDecklist('2 Spike\n4 Bolt\n1 Shatter');
   assert.equal(deckKey(a), deckKey(b));
   assert.notEqual(deckKey(a), deckKey(c));
+});
+
+test('deckColors ignora terrenos e cores com poucas cópias; fitsColors aceita subconjuntos e incolores', () => {
+  const db = new CardDatabase([
+    card('Bolt', { colors: ['R'] }),
+    card('Growth', { colors: ['G'] }),
+    card('Splash', { colors: ['U'] }),
+    card('Gold', { colors: ['R', 'G'] }),
+    card('Relic', { colors: [] }),
+    card('Taiga', { typeLine: 'Land — Mountain Forest', colors: ['R', 'G'] }),
+    card('Tundra', { typeLine: 'Land', colors: ['W', 'U'] }),
+  ]);
+  assert.deepEqual(deckColors([['Bolt', 12], ['Growth', 10], ['Gold', 4], ['Splash', 1], ['Relic', 8], ['Tundra', 4], ['Desconhecida', 4]], db), ['R', 'G']);
+  assert.deepEqual(deckColors([['Relic', 20], ['Taiga', 4]], db), []);
+  assert.deepEqual(deckColors([], db), []);
+
+  assert.equal(fitsColors(['R', 'G'], ['G', 'R', 'U']), true);
+  assert.equal(fitsColors(['R', 'G'], ['R']), false);
+  assert.equal(fitsColors([], ['W']), true);
+  assert.equal(fitsColors(['R'], []), false);
+});
+
+test('busca de cartas: começo do nome primeiro, sem acento, com limite', () => {
+  const db = new CardDatabase(['Lightning Bolt', 'Bolt Bend', 'Firebolt', "Lim-Dûl's Vault", 'Opt'].map((n) => card(n)));
+  assert.deepEqual(db.search('bolt').map((c) => c.name), ['Bolt Bend', 'Firebolt', 'Lightning Bolt']);
+  assert.deepEqual(db.search('LIM-DUL').map((c) => c.name), ["Lim-Dûl's Vault"]);
+  assert.deepEqual(db.search('bolt', 1).map((c) => c.name), ['Bolt Bend']);
+  assert.deepEqual(db.search('b'), []);
+  assert.deepEqual(db.search('nada disso'), []);
+});
+
+test('cardImageUrl monta o endereço da carta inteira no Scryfall', () => {
+  assert.equal(cardImageUrl('abcdef12-0000', 'small'), 'https://cards.scryfall.io/small/front/a/b/abcdef12-0000.jpg');
+  assert.match(cardImageUrl('abcdef12-0000'), /\/normal\/front\//);
+});
+
+test('cardSlug gera endereço estável e getBySlug acha a carta', () => {
+  assert.equal(cardSlug('Fire // Ice'), 'fire-ice');
+  assert.equal(cardSlug("Lim-Dûl's Vault"), 'lim-dul-s-vault');
+  assert.equal(cardSlug('  Urza, Lord High Artificer '), 'urza-lord-high-artificer');
+  const db = new CardDatabase([card('Fire // Ice'), card("Lim-Dûl's Vault"), card('Opt')]);
+  assert.equal(db.getBySlug('fire-ice')?.name, 'Fire // Ice');
+  assert.equal(db.getBySlug('lim-dul-s-vault')?.name, "Lim-Dûl's Vault");
+  assert.equal(db.getBySlug('nao-existe'), undefined);
+  assert.deepEqual(db.all.map((c) => c.name), ['Fire // Ice', "Lim-Dûl's Vault", 'Opt']);
 });

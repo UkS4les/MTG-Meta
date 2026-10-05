@@ -1,5 +1,9 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 export type Platform = 'arena' | 'paper';
+export type Color = 'W' | 'U' | 'B' | 'R' | 'G';
+
+/** As cinco cores na ordem tradicional do Magic. */
+export const COLORS: readonly Color[] = ['W', 'U', 'B', 'R', 'G'];
 
 /** Da mais comum para a mais rara. */
 export const RARITIES: readonly Rarity[] = ['common', 'uncommon', 'rare', 'mythic'];
@@ -18,6 +22,17 @@ export interface CardInfo {
    * "Spider Manifestation" tem no MTGO e no Arena. As listas do MTGO usam esses nomes.
    */
   aliases?: string[];
+  /** Custo de mana como o Scryfall escreve, ex.: "{1}{R}{G}". Faces separadas por " // ". */
+  manaCost?: string;
+  /** Texto de regras em inglês. Em cartas de duas faces, uma face por bloco, separadas por uma linha "//". */
+  text?: string;
+  /** Identidade de cor, na ordem W U B R G (branco, azul, preto, vermelho, verde). Vazio = incolor. */
+  colors?: Color[];
+  /**
+   * Identificador no Scryfall da impressão usada como imagem da carta.
+   * O endereço da imagem sai dele; veja `cardImageUrl`.
+   */
+  imageId?: string;
   /** Identificadores da carta no Arena (o "grpId" que aparece no log do jogo), um por impressão. */
   arenaIds?: number[];
   typeLine: string;

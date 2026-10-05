@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FORMATS, formatDecklist, isFormatKey, type DeckEntry } from '@mtg-meta/core';
+import { deckColors, FORMATS, formatDecklist, isFormatKey, isLand, type DeckEntry } from '@mtg-meta/core';
 import { getArchetype, getArchetypeResults, getDeck, getMeta, META_PERIODS, type ArchetypeResult } from '@mtg-meta/db';
+import { CardGrid, type GridCard } from '@/components/card-grid';
+import { CardLink } from '@/components/card-link';
+import { ColorPips } from '@/components/color-pips';
 import { CopyButton } from '@/components/copy-button';
-import { date, percent, scryfallUrl } from '@/lib/format';
-import { getDb } from '@/lib/server';
+import { WantButton } from '@/components/want-button';
+import { cardRef } from '@/lib/cards-view';
+import { date, percent } from '@/lib/format';
+import { cardDb, getDb } from '@/lib/server';
 
 interface Props {
   params: Promise<{ formato: string; id: string }>;
@@ -25,21 +30,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${found.archetype.name} (${FORMATS[found.format]})`,
     description: `Lista representativa, cartas-chave e resultados recentes de ${found.archetype.name} no ${FORMATS[found.format]} do Magic Online.`,
   };
-}
-
-function CardList({ entries }: { entries: DeckEntry[] }) {
-  return (
-    <ul className="card-list">
-      {entries.map((entry) => (
-        <li key={entry.name}>
-          <span className="qty">{entry.quantity}</span>
-          <a href={scryfallUrl(entry.name)} rel="noreferrer">
-            {entry.name}
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
 }
 
 function resultLabel(result: ArchetypeResult): string {
@@ -65,6 +55,13 @@ export default async function ArchetypePage({ params }: Props) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, 16);
   const count = (entries: DeckEntry[]) => entries.reduce((total, e) => total + e.quantity, 0);
+  const cards = cardDb();
+  const colors = deckColors(Object.entries(archetype.signature), cards);
+  // Mágicas primeiro, terrenos no fim, como a maioria dos sites de decklist mostra.
+  const toGrid = (entries: DeckEntry[]): GridCard[] =>
+    entries
+      .map((entry) => ({ ...cardRef(entry.name, cards), quantity: entry.quantity, land: (() => { const card = cards.get(entry.name); return card ? isLand(card) : false; })() }))
+      .sort((a, b) => Number(a.land) - Number(b.land) || b.quantity - a.quantity || a.name.localeCompare(b.name));
 
   return (
     <>
@@ -72,6 +69,10 @@ export default async function ArchetypePage({ params }: Props) {
         <Link href={`/meta/${format}`}>← Meta de {FORMATS[format]}</Link>
       </p>
       <h1>{archetype.name}</h1>
+      <p className="actions">
+        <ColorPips colors={colors} />
+        <WantButton deck={{ id: archetype.id, format, name: archetype.name }} />
+      </p>
       <p className="muted">
         {shares.map(({ period, row }) => `${row ? percent(row.share) : '0%'} em ${period} dias`).join(' · ')}
         {archetype.autoNamed && <span className="tag">nome provisório</span>}
@@ -82,18 +83,14 @@ export default async function ArchetypePage({ params }: Props) {
           <h2>Lista representativa</h2>
           <p className="small muted">A lista publicada mais próxima da média do arquétipo. É ela que entra no cálculo de “O que posso montar”.</p>
           <div className="card">
-            <div className="columns">
-              <div>
-                <p className="small muted">Main ({count(deck.main)})</p>
-                <CardList entries={deck.main} />
-              </div>
-              {deck.sideboard.length > 0 && (
-                <div>
-                  <p className="small muted">Sideboard ({count(deck.sideboard)})</p>
-                  <CardList entries={deck.sideboard} />
-                </div>
-              )}
-            </div>
+            <p className="small muted">Main ({count(deck.main)})</p>
+            <CardGrid cards={toGrid(deck.main)} />
+            {deck.sideboard.length > 0 && (
+              <>
+                <p className="small muted">Sideboard ({count(deck.sideboard)})</p>
+                <CardGrid cards={toGrid(deck.sideboard)} />
+              </>
+            )}
             <div className="actions">
               <CopyButton text={formatDecklist(deck)} label="Copiar lista (Arena e MTGO)" />
               <Link href={`/montar?formato=${format}`}>Quanto falta para eu montar?</Link>
@@ -109,9 +106,7 @@ export default async function ArchetypePage({ params }: Props) {
           {keyCards.map(([name, copies]) => (
             <li key={name}>
               <span className="qty">{copies.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</span>
-              <a href={scryfallUrl(name)} rel="noreferrer">
-                {name}
-              </a>
+              <CardLink name={name} imageId={cards.get(name)?.imageId ?? null} />
             </li>
           ))}
         </ul>
@@ -129,8 +124,9 @@ export default async function ArchetypePage({ params }: Props) {
             </tr>
           </thead>
           <tbody>
-            {results.map((result) => (
-              <tr key={`${result.date}-${result.eventName}-${result.player}-${result.deckId}`}>
+            {results.map((result, index) => (
+              // O mesmo jogador pode repetir a lista em dois eventos de mesmo nome no mesmo dia: a posição desempata.
+              <tr key={`${result.date}-${result.eventName}-${result.player}-${result.deckId}-${index}`}>
                 <td className="num">{date(result.date)}</td>
                 <td>{result.eventName}</td>
                 <td>{resultLabel(result)}</td>

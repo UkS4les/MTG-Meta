@@ -2,9 +2,16 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type CSSProperties } from 'react';
-import { FORMATS, FORMAT_KEYS, type FormatKey, type Platform, type SortBy } from '@mtg-meta/core';
+import { fitsColors, FORMATS, FORMAT_KEYS, type FormatKey, type Platform, type SortBy } from '@mtg-meta/core';
+import { CardImage } from '@/components/card-image';
+import { CardLink } from '@/components/card-link';
+import { ColorFilter } from '@/components/color-filter';
+import { ColorPips } from '@/components/color-pips';
+import { WantButton } from '@/components/want-button';
+import { useWantedDecks } from '@/lib/wanted';
+import { useColorPreference } from '@/lib/color-preference';
 import type { CollectionStatus, CoverageDeck, CoverageRequest, CoverageResponse } from '@/lib/coverage';
-import { integer, percent, PLATFORM_PT, RARITY_PLURAL_PT, RARITY_PT, scryfallUrl, usd, wholePercent } from '@/lib/format';
+import { integer, percent, PLATFORM_PT, RARITY_PLURAL_PT, RARITY_PT, usd, wholePercent } from '@/lib/format';
 import { errorMessage, readLocalCollection } from '@/lib/local-collection';
 
 const PLATFORMS: Platform[] = ['arena', 'paper'];
@@ -28,14 +35,25 @@ function effort(deck: CoverageDeck, platform: Platform): string {
   return `${copies} · curingas: ${wildcards.join(', ')}`;
 }
 
-function DeckRow({ deck, format, platform, index }: { deck: CoverageDeck; format: FormatKey; platform: Platform; index: number }) {
+function DeckRow({ deck, format, platform, index, dim, wanted }: { deck: CoverageDeck; format: FormatKey; platform: Platform; index: number; dim: boolean; wanted: boolean }) {
   const whole = Math.floor(deck.coverage * 100);
   const level = whole >= 100 ? 'full' : whole >= 70 ? 'high' : whole >= 35 ? 'mid' : 'low';
   return (
-    <details className={`deck-row level-${level}`} style={{ '--i': Math.min(index, 16), '--p': whole } as CSSProperties}>
+    <details className={`deck-row with-thumbs level-${level}${dim ? ' dim' : ''}`} style={{ '--i': Math.min(index, 16), '--p': whole } as CSSProperties}>
       <summary>
+        <span className="thumbs" aria-hidden="true">
+          {deck.cards.map((card) => (
+            <CardImage key={card.name} name="" imageId={card.imageId} size="small" />
+          ))}
+        </span>
         <span className="deck-name">
+          {wanted && (
+            <span className="want-star" role="img" aria-label="Quero montar">
+              ★
+            </span>
+          )}
           {deck.name}
+          <ColorPips colors={deck.colors} />
           <span className="tag">{percent(deck.share)} do meta</span>
         </span>
         <span className="coverage ring">
@@ -52,9 +70,7 @@ function DeckRow({ deck, format, platform, index }: { deck: CoverageDeck; format
               <li key={card.name}>
                 <span className="num">{card.missing}×</span>
                 <span>
-                  <a href={scryfallUrl(card.name)} rel="noreferrer">
-                    {card.name}
-                  </a>{' '}
+                  <CardLink name={card.name} imageId={card.imageId} />{' '}
                   {card.rarity && <span className={`small rarity-${card.rarity}`}>{RARITY_PT[card.rarity]}</span>}
                   {platform === 'arena' && deck.notOnArena.includes(card.name) && <span className="tag">não existe no Arena</span>}
                   {platform === 'paper' && (
@@ -68,7 +84,8 @@ function DeckRow({ deck, format, platform, index }: { deck: CoverageDeck; format
             ))}
           </ul>
         )}
-        <p className="small">
+        <p className="actions small">
+          <WantButton deck={{ id: deck.archetypeId, format, name: deck.name }} />
           <Link href={`/meta/${format}/${deck.archetypeId}`}>Ver a lista completa →</Link>
         </p>
       </div>
@@ -137,6 +154,14 @@ export function BuildableDecks({ initialFormat, initialPlatform }: { initialForm
   }, [sources, platform, format, sortBy]);
 
   const shown = platform ?? 'arena';
+  const [preference, setPreference] = useColorPreference();
+  const decks = state.status === 'ready' ? state.data.decks : [];
+  const fits = (deck: CoverageDeck) => fitsColors(deck.colors, preference.colors);
+  const filtering = preference.colors.length > 0;
+  const { wanted, isWanted } = useWantedDecks();
+  const [onlyWanted, setOnlyWanted] = useState(false);
+  const wantedHere = decks.filter((deck) => isWanted(deck.archetypeId)).length;
+  const visible = decks.filter((deck) => (!filtering || !preference.only || fits(deck)) && (!onlyWanted || wantedHere === 0 || isWanted(deck.archetypeId)));
 
   return (
     <>
@@ -197,12 +222,32 @@ export function BuildableDecks({ initialFormat, initialPlatform }: { initialForm
                 fim.
               </p>
             )}
+            {state.data.decks.length > 0 && (
+              <ColorFilter preference={preference} onChange={setPreference} matching={decks.filter(fits).length} total={decks.length} />
+            )}
+            {wantedHere > 0 && (
+              <label className="check">
+                <input type="checkbox" checked={onlyWanted} onChange={(event) => setOnlyWanted(event.target.checked)} />
+                <span className="want-star" aria-hidden="true">
+                  ★
+                </span>
+                Mostrar só os que eu quero montar ({wantedHere})
+              </label>
+            )}
+            {wanted.length === 0 && state.data.decks.length > 0 && (
+              <p className="small muted">Abra um deck e marque-o como objetivo para acompanhar só os que você quer montar.</p>
+            )}
             {state.data.decks.length === 0 ? (
               <div className="card">
                 <p>Ainda não há arquétipos de {FORMATS[format]} no banco.</p>
               </div>
             ) : (
-              state.data.decks.map((deck, index) => <DeckRow key={deck.archetypeId} deck={deck} format={format} platform={shown} index={index} />)
+              visible.map((deck, index) => (
+                <DeckRow key={deck.archetypeId} deck={deck} format={format} platform={shown} index={index} dim={filtering && !fits(deck)} wanted={isWanted(deck.archetypeId)} />
+              ))
+            )}
+            {filtering && preference.only && visible.length === 0 && decks.length > 0 && (
+              <p className="muted">Nenhum arquétipo deste formato cabe só nas cores escolhidas.</p>
             )}
             {shown === 'paper' && <p className="small muted">Preços em dólar da impressão mais barata no Scryfall, atualizados uma vez por dia.</p>}
           </>

@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import { FORMATS, FORMAT_KEYS, type FormatKey } from '@mtg-meta/core';
 import { getFormatStatus, getMeta, META_PERIODS, type MetaPeriod } from '@mtg-meta/db';
-import { date, integer, percent } from '@/lib/format';
-import { getDb } from '@/lib/server';
+import { deckLook } from '@/lib/cards-view';
+import { date, integer } from '@/lib/format';
+import { cardDb, getDb } from '@/lib/server';
+import { MetaTable, type MetaTableRow } from './meta-table';
 
 export function parsePeriod(value: string | string[] | undefined): MetaPeriod {
   const days = Number(Array.isArray(value) ? value[0] : value);
@@ -13,7 +14,14 @@ export function parsePeriod(value: string | string[] | undefined): MetaPeriod {
 export async function MetaView({ format, period }: { format: FormatKey; period: MetaPeriod }) {
   const db = await getDb();
   const [rows, status] = await Promise.all([getMeta(db, format, period), getFormatStatus(db, format, period)]);
-  const largest = Math.max(...rows.map((r) => r.share), 0.0001);
+  const cards = cardDb();
+  const tableRows: MetaTableRow[] = rows.map((row) => ({
+    id: row.archetypeId,
+    name: row.name,
+    share: row.share,
+    decks: row.decks,
+    ...deckLook(Object.entries(row.signature), cards, 2),
+  }));
   const hasAutoNames = rows.some((r) => r.autoNamed);
 
   return (
@@ -53,40 +61,7 @@ export async function MetaView({ format, period }: { format: FormatKey; period: 
             {integer(status.results)} listas de {integer(status.events)} eventos nos últimos {period} dias
             {status.lastEventDate && <> · evento mais recente em {date(status.lastEventDate)}</>}
           </p>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th className="num">#</th>
-                  <th>Arquétipo</th>
-                  <th className="num">Participação</th>
-                  <th aria-hidden="true" />
-                  <th className="num">Listas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, index) => (
-                  <tr key={row.archetypeId ?? 'outros'} className={row.archetypeId !== null && index < 3 ? `top top-${index + 1}` : undefined} style={{ '--i': Math.min(index, 24) } as CSSProperties}>
-                    <td className="num rank">{row.archetypeId === null ? '' : <span>{index + 1}</span>}</td>
-                    <td>
-                      {row.archetypeId === null ? (
-                        <span className="muted">Outros (sem arquétipo definido)</span>
-                      ) : (
-                        <Link href={`/meta/${format}/${row.archetypeId}`}>{row.name}</Link>
-                      )}
-                    </td>
-                    <td className="num">{percent(row.share)}</td>
-                    <td className="bar-cell" aria-hidden="true">
-                      <div className="bar">
-                        <span style={{ width: `${(row.share / largest) * 100}%` }} />
-                      </div>
-                    </td>
-                    <td className="num">{integer(row.decks)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <MetaTable format={format} rows={tableRows} />
           {hasAutoNames && (
             <p className="small muted">
               Os arquétipos são agrupados automaticamente por semelhança entre as listas. Enquanto ninguém dá o nome usado pela comunidade,

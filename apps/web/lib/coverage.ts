@@ -1,4 +1,5 @@
 import type { MissingCard, Platform, Rarity, SortBy } from '@mtg-meta/core';
+import type { DeckLook } from './cards-shared';
 
 /** Corpo de POST /api/cobertura. */
 export interface CoverageRequest {
@@ -9,7 +10,7 @@ export interface CoverageRequest {
   colecao?: string;
 }
 
-export interface CoverageDeck {
+export interface CoverageDeck extends DeckLook {
   archetypeId: number;
   name: string;
   autoNamed: boolean;
@@ -18,7 +19,7 @@ export interface CoverageDeck {
   cardsNeeded: number;
   cardsOwned: number;
   missingCopies: number;
-  missing: MissingCard[];
+  missing: (MissingCard & { imageId: string | null })[];
   wildcards: Record<Rarity, number>;
   costUsd: number;
   unpricedMissing: string[];

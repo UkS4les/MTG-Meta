@@ -1,6 +1,7 @@
 import { isFormatKey, parseCollectionText, rankDecks, resolveCollection, type Collection } from '@mtg-meta/core';
 import { getArchetypeDecks, getCollection } from '@mtg-meta/db';
 import { jsonError, parsePlatform, readJson } from '@/lib/api';
+import { deckLook } from '@/lib/cards-view';
 import { MAX_COLLECTION_BYTES, type CoverageResponse } from '@/lib/coverage';
 import { cardDb, currentUser, getDb } from '@/lib/server';
 
@@ -48,7 +49,8 @@ export async function POST(request: Request): Promise<Response> {
         cardsNeeded: r.cardsNeeded,
         cardsOwned: r.cardsOwned,
         missingCopies: r.missing.reduce((total, m) => total + m.missing, 0),
-        missing: r.missing,
+        missing: r.missing.map((m) => ({ ...m, imageId: cards.get(m.name)?.imageId ?? null })),
+        ...deckLook(Object.entries(archetype.signature), cards),
         wildcards: r.wildcards,
         costUsd: r.costUsd,
         unpricedMissing: r.unpricedMissing,

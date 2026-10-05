@@ -22,6 +22,44 @@ function printing(overrides: Partial<ScryfallCard> & { name: string }): Scryfall
 }
 
 describe('buildCardsFromScryfall', () => {
+  it('guarda custo de mana e texto, juntando as faces', () => {
+    const cards = buildCardsFromScryfall([
+      printing({ name: 'Shock', mana_cost: '{R}', oracle_text: 'Shock deals 2 damage to any target.' }),
+      printing({
+        name: 'Fire // Ice',
+        card_faces: [
+          { name: 'Fire', mana_cost: '{1}{R}', oracle_text: 'Fire deals 2 damage.' },
+          { name: 'Ice', mana_cost: '{1}{U}', oracle_text: 'Tap target permanent.' },
+        ],
+      }),
+      printing({ name: 'Mountain', type_line: 'Basic Land — Mountain' }),
+    ]);
+    const by = (name: string) => cards.find((c) => c.name === name)!;
+    assert.deepEqual([by('Shock').manaCost, by('Shock').text], ['{R}', 'Shock deals 2 damage to any target.']);
+    assert.deepEqual([by('Fire // Ice').manaCost, by('Fire // Ice').text], ['{1}{R} // {1}{U}', 'Fire deals 2 damage.\n//\nTap target permanent.']);
+    assert.deepEqual([by('Mountain').manaCost, by('Mountain').text], ['', '']);
+  });
+
+  it('guarda a identidade de cor em ordem WUBRG e escolhe a melhor impressão para a imagem', () => {
+    const img = { image_uris: { normal: 'x' } };
+    const cards = buildCardsFromScryfall([
+      printing({ name: 'Fire // Ice', id: 'promo', color_identity: ['R', 'U'], ...img, image_status: 'highres_scan', promo: true, released_at: '2024-01-01' }),
+      printing({ name: 'Fire // Ice', id: 'antiga', color_identity: ['R', 'U'], ...img, image_status: 'highres_scan', released_at: '2001-06-01' }),
+      printing({ name: 'Fire // Ice', id: 'nova', color_identity: ['R', 'U'], ...img, image_status: 'highres_scan', released_at: '2019-06-01' }),
+      printing({ name: 'Fire // Ice', id: 'lowres', color_identity: ['R', 'U'], ...img, image_status: 'lowres', released_at: '2026-01-01' }),
+      printing({ name: 'Fire // Ice', id: 'japonesa', lang: 'ja', color_identity: ['R', 'U'], ...img, image_status: 'highres_scan', released_at: '2026-01-01' }),
+      printing({ name: 'Fire // Ice', id: 'semimagem', color_identity: ['R', 'U'], released_at: '2026-02-01' }),
+      printing({ name: 'Ornithopter', id: 'dfc', card_faces: [{ name: 'Ornithopter', image_uris: { normal: 'y' } }] }),
+      printing({ name: 'Sem Imagem', id: 'nada' }),
+    ]);
+    const fire = cards.find((c) => c.name === 'Fire // Ice')!;
+    assert.deepEqual(fire.colors, ['U', 'R']);
+    assert.equal(fire.imageId, 'nova');
+    assert.deepEqual(cards.find((c) => c.name === 'Ornithopter')!.colors, []);
+    assert.equal(cards.find((c) => c.name === 'Ornithopter')!.imageId, 'dfc');
+    assert.equal(cards.find((c) => c.name === 'Sem Imagem')!.imageId, undefined);
+  });
+
   it('guarda os identificadores do Arena de todas as impressões', () => {
     const cards = buildCardsFromScryfall([
       printing({ name: 'Opt', arena_id: 70001, games: ['arena'] }),
