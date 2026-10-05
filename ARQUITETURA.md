@@ -144,7 +144,7 @@ Decks do mesmo arquétipo variam algumas cartas. Os itens 1 a 3 estão implement
 |---|---|---|
 | 1 ✅ | Motor de cobertura, parsers, script do Scryfall, CLI e testes | — |
 | 2 ✅ | Site com login, importação da coleção, decks do MTGO, classificador v1, páginas de meta (share de torneios) e "o que posso montar" | Fase 1 |
-| 3 (parcial) | Tracker desktop: lê o log, envia partidas, página "minhas estatísticas". **Pronto:** leitor do log, tabela `matches`, API e a página `/partidas`, com envio manual do arquivo. O programa que acompanha o jogo em tempo real (`apps/tracker`, em Node, rodando no terminal) e a chave que o autoriza (tabela `api_tokens`). **Falta:** validar o leitor com logs reais e embrulhar o tracker em um aplicativo instalável (Electron) com ícone na bandeja; a lógica de acompanhar o log já está separada da linha de comando para isso. | Fase 2 (API e contas) |
+| 3 (parcial) | Tracker desktop: lê o log, envia partidas, página "minhas estatísticas". **Pronto:** leitor do log, tabela `matches`, API e a página `/partidas`, com envio manual do arquivo. O programa que acompanha o jogo em tempo real (`apps/tracker`, em Node, rodando no terminal) e a chave que o autoriza (tabela `api_tokens`). O leitor foi conferido com logs reais (`npm run logs:conferir`, contra o acervo público manasight-corpus). **Falta:** embrulhar o tracker em um aplicativo instalável (Electron) com ícone na bandeja; a lógica de acompanhar o log já está separada da linha de comando para isso. | Fase 2 (API e contas) |
 | 4 | Meta próprio do Arena (win rate e confrontos a partir das partidas dos usuários) | Volume de usuários do tracker |
 | 5 | Commander (cobertura contra listas médias por comandante), substitutos por função, preços em reais | Definir fonte de dados de Commander e de preços BR |
 
@@ -163,5 +163,5 @@ Decks do mesmo arquétipo variam algumas cartas. Os itens 1 a 3 estão implement
 - Preços em reais: verificar se a LigaMagic ou outra loja oferece API ou parceria.
 - Fonte de dados de Commander (verificar termos e disponibilidade de dados do EDHREC).
 - Hospedagem (Supabase + Vercel é o caminho mais curto para uma pessoa só). Ao decidir: escrever a implementação de `Db` para Postgres hospedado e avaliar trocar o login próprio (e-mail e senha, sessões no banco) pelo do serviço, que já traz recuperação de senha.
-- Antes de ir ao ar: limite de tentativas de login, recuperação de senha, política de privacidade e agendamento da ingestão.
+- O alvo atual é rodar localmente (em casa ou em rede local), com Docker. Já existem limite de tentativas de login, troca de senha, senha provisória gerada pelo administrador (a primeira conta), página de privacidade e ingestão agendada dentro do contêiner. Para abrir na internet ainda faltam recuperação de senha por e-mail, HTTPS e banco hospedado.
 - Nomes de arquétipos: curadoria manual pelo comando de renomear, ou importar regras de nomes de um projeto aberto (verificar licença).

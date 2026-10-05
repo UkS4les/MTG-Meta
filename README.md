@@ -12,7 +12,8 @@ e acompanha as suas partidas do Arena. Gratuito, sem cadastro obrigatório.
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
 ![Postgres](https://img.shields.io/badge/Postgres-PGlite-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-um%20clique-2496ED?logo=docker&logoColor=white)
-![Testes](https://img.shields.io/badge/testes-95%20passando-2ea44f)
+[![Verificação](https://github.com/UkS4les/MTG-Meta/actions/workflows/ci.yml/badge.svg)](https://github.com/UkS4les/MTG-Meta/actions/workflows/ci.yml)
+![Testes](https://img.shields.io/badge/testes-102-2ea44f)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-yellow)
 
 <img src="docs/imagens/inicio.png" alt="Página inicial: chamada para importar a coleção e tabela do meta de Standard com a participação de cada arquétipo" width="820">
@@ -33,7 +34,8 @@ e acompanha as suas partidas do Arena. Gratuito, sem cadastro obrigatório.
 | 📚 **Minha coleção** | Importa CSV (Moxfield, Manabox, Archidekt, TCGplayer…) ou lista `4 Nome da Carta`. Papel e Arena separados. |
 | ⚔️ **Minhas partidas** | Histórico do Arena lido do `Player.log`: taxa de vitória por deck, por fila, jogando ou comprando primeiro e contra cada arquétipo. |
 | 📡 **Tracker** | Programa que acompanha o jogo e envia cada partida assim que ela termina. |
-| 👤 **Conta opcional** | Tudo funciona sem conta, com os dados no navegador. A conta só serve para salvar; dá para baixar os dados e apagar tudo. |
+| 👤 **Conta opcional** | Tudo funciona sem conta, com os dados no navegador. A conta só serve para salvar; dá para trocar a senha, baixar os dados e apagar tudo. |
+| 🛡️ **Administrador** | A primeira conta criada administra a instalação: dá aos arquétipos o nome que a comunidade usa e gera senha provisória para quem esqueceu a sua. |
 
 <table>
 <tr>
@@ -72,8 +74,8 @@ O atalho monta a imagem, baixa as cartas e um mês de torneios, espera o site re
 - 🔌 **Outra porta**: crie um arquivo `.env` com `PORTA=8080` (veja [.env.example](.env.example)).
 - 🐧 **No Linux**, se o atalho disser que o Docker não respondeu, seu usuário não está no grupo `docker`: `sudo usermod -aG docker $USER` e entre de novo na sessão.
 
-> [!WARNING]
-> A imagem do Docker e os atalhos `.bat` e `.command` ainda não foram executados de verdade. O que foi testado é o roteiro de inicialização do contêiner ([docker/iniciar.mjs](docker/iniciar.mjs)) rodando fora dele, e a sintaxe do `docker-compose.yml` e dos scripts de shell.
+> [!NOTE]
+> A cada envio ao repositório, a [verificação automática](https://github.com/UkS4les/MTG-Meta/actions/workflows/ci.yml) constrói a imagem, sobe o site pelo `iniciar.sh`, confere as páginas e reinicia para ver se os dados ficaram. Os atalhos do Windows e do macOS são executados lá só até o aviso de "Docker ausente": os servidores do GitHub não rodam o site nesses sistemas, então a subida completa neles ainda depende de alguém testar em uma máquina real.
 
 ## 🛠️ Rodar sem Docker (desenvolvimento)
 
@@ -91,12 +93,14 @@ Rode `cartas:baixar` no máximo uma vez por dia (o Scryfall atualiza preços 1x 
 | Comando | O que faz |
 |---|---|
 | `npm run dev` / `build` / `start` | Site em desenvolvimento / build de produção / servir o build |
-| `npm test` | Testes (95) |
+| `npm test` | Testes (102) |
 | `npm run typecheck` | Checagem de tipos de todos os pacotes |
 | `npm run cartas:baixar` | Baixa o bulk do Scryfall e gera `data/cards.json` |
 | `npm run meta:ingerir -- --dias 7 --formatos standard,modern` | Ingestão com janela e formatos escolhidos |
 | `npm run tracker -- --servidor http://localhost:3000 --chave mtgm_...` | Acompanha o Arena e envia cada partida ao terminar (depois da primeira vez, só `npm run tracker`) |
-| `npm run arquetipo:renomear -- 153 "Golgari Midrange"` | Troca o nome provisório de um arquétipo |
+| `npm run arquetipo:renomear -- 153 "Golgari Midrange"` | Troca o nome provisório de um arquétipo (também dá pelo site, como administrador) |
+| `npm run conta:senha -- pessoa@exemplo.com` | Gera uma senha provisória para a conta (para quando o administrador esquece a própria) |
+| `npm run logs:conferir` | Confere o leitor do log do Arena contra logs reais de um acervo público |
 | `npm run cobertura -- --colecao x.csv --decks pasta/ --plataforma papel` | Motor de cobertura na linha de comando |
 | `npm run exemplo` | O mesmo, com os dados de exemplo |
 
@@ -141,7 +145,7 @@ A fonte não traz o nome do arquétipo de cada lista, então o classificador agr
 1. De cada deck entram só as cartas não-terreno do main.
 2. A semelhança entre dois decks é a Jaccard ponderada (cópias em comum ÷ cópias no total). Um deck entra no arquétipo mais parecido se passar de 0,4.
 3. Os que não entram em nenhum são agrupados entre si; grupos com 3 ou mais listas viram arquétipos novos. O resto aparece como "Outros".
-4. O nome inicial são as duas cartas que mais distinguem o grupo dos outros do formato (ex.: "Amulet of Vigor / Spelunking"). É provisório: use `arquetipo:renomear` para dar o nome que a comunidade usa. O número do arquétipo, e portanto o endereço da página, não muda.
+4. O nome inicial é o grupo de cores mais as duas cartas que mais distinguem o grupo dos outros do formato (ex.: "Izzet — Lava Dart / Cori-Steel Cutter"). É provisório: o administrador troca pelo nome que a comunidade usa na página do arquétipo, ou pelo comando `arquetipo:renomear`. O número do arquétipo, e portanto o endereço da página, não muda.
 
 </details>
 
@@ -166,6 +170,8 @@ A ideia vem do [Tapps Tracker](https://github.com/pattont/MTGA-Tapps) (rastreado
 
 Do log saem: fila, resultado da partida e de cada jogo, quem começou, o deck enviado e as cartas do oponente que ficaram visíveis. O arquivo é lido no navegador; para o servidor vai só o resumo de cada partida, sem nome de oponente. As cartas vêm como números do Arena, e `data/cards.json` guarda esses números (`arenaIds`) para trocá-los por nomes.
 
+O leitor é conferido contra logs reais do [manasight-corpus](https://github.com/manasight/manasight-corpus) (acervo público com os nomes dos jogadores já apagados) pelo comando `npm run logs:conferir`, que também roda na verificação automática. Como o formato do log muda sem aviso, é esse teste que acusa quando o leitor precisar de ajuste.
+
 O arquétipo do oponente é um palpite: a fração das cartas vistas que batem com cada arquétipo do meta do MTGO, só para Standard e Pioneer e com pelo menos 3 cartas não-terreno vistas.
 
 </details>
@@ -186,10 +192,10 @@ Monorepo com npm workspaces. Os pacotes são TypeScript puro, sem etapa de build
 
 ## ⚠️ Limitações conhecidas
 
-- **O leitor do log do Arena ainda não foi testado com um `Player.log` real**, só com logs montados no formato conhecido. O formato não é documentado pela Wizards e muda sem aviso.
-- Os nomes dos arquétipos são automáticos até alguém renomear.
+- O leitor do log do Arena foi conferido com logs reais de 2026 (Standard, Pioneer, draft e selado), mas o formato não é documentado pela Wizards e muda sem aviso. O tracker em tempo real ainda não foi usado em uma partida ao vivo.
+- Os nomes dos arquétipos são automáticos até o administrador renomear.
 - A participação mede presença entre os melhores resultados, não taxa de vitória: o MTGO só publica o top 32 dos Challenges e as campanhas 5-0 das Ligas.
-- O login não tem limite de tentativas nem recuperação de senha por e-mail; precisa dos dois antes de ir para a internet aberta.
+- O site é feito para rodar em casa ou em uma rede local. Não envia e-mails (quem esquece a senha pede uma provisória ao administrador) e não tem HTTPS próprio; para abrir na internet falta isso e um banco hospedado.
 - O tracker roda em uma janela de terminal (ou no Docker). Ainda não é um aplicativo instalável com ícone na bandeja, nem tem painel sobre a tela do jogo.
 - O banco hospedado (Supabase ou Neon) ainda não está ligado: falta uma implementação da interface `Db` em [packages/db/src/client.ts](packages/db/src/client.ts). O SQL já é Postgres puro.
 - O texto das cartas está em inglês, como vem do Scryfall, e a busca é por termos em inglês.
@@ -203,6 +209,7 @@ Monorepo com npm workspaces. Os pacotes são TypeScript puro, sem etapa de build
 - Cartas, preços e imagens: [Scryfall](https://scryfall.com/docs/api/bulk-data). Não pode haver paywall sobre esses dados, e as imagens aparecem sempre com a carta inteira (sem recortar o nome do artista nem o copyright), como as regras deles pedem.
 - Torneios: [mtgo.com](https://www.mtgo.com/decklists), via [modometa/modometa-mtgo-data](https://github.com/modometa/modometa-mtgo-data) (licença MIT).
 - Decks iniciais do Arena: listas de [Draftsim](https://draftsim.com/mtg-arena-starter-decks/), lidas em outubro de 2026. A Wizards só publicou a versão de 2024 desses decks; se o Arena trocá-los, a lista em [packages/core/src/starter-decks.ts](packages/core/src/starter-decks.ts) precisa ser atualizada à mão.
+- Logs reais para conferir o leitor: [manasight/manasight-corpus](https://github.com/manasight/manasight-corpus) (licenças MIT e Apache-2.0).
 - Ideia do acompanhamento de partidas: [Tapps Tracker](https://github.com/pattont/MTGA-Tapps).
 
 ## 📄 Licença
