@@ -1,5 +1,8 @@
 import {
+  AUTO_NAME_SEPARATOR,
   buildSignature,
+  colorGroupName,
+  deckColors,
   classifyDeck,
   clusterDecks,
   deckFeatures,
@@ -11,7 +14,7 @@ import {
   type CardDatabase,
   type Features,
 } from '@mtg-meta/core';
-import { assignArchetypes, createArchetype, listArchetypes, recentDecks, updateArchetype, type Db } from '@mtg-meta/db';
+import { assignArchetypes, createArchetype, listArchetypes, recentDecks, setAutoName, updateArchetype, type Db } from '@mtg-meta/db';
 
 /** Janela de listas que define a assinatura de cada arquétipo: longa o bastante para dar volume, curta para acompanhar o meta. */
 export const SIGNATURE_WINDOW_DAYS = 60;
@@ -44,7 +47,8 @@ export async function classifyFormat(db: Db, cards: CardDatabase, format: string
   const features = new Map<number, Features>(
     decks.map((d) => [d.id, deckFeatures({ name: '', main: d.main, sideboard: [], commander: [], warnings: [] }, cards)]),
   );
-  const archetypes = (await listArchetypes(db, format)).map((a) => ({ id: a.id, name: a.name, features: fromSignature(a.signature) }));
+  const archetypes = (await listArchetypes(db, format)).map((a) => ({ id: a.id, name: a.name, autoNamed: a.autoNamed, features: fromSignature(a.signature) }));
+  const names = new Map(archetypes.map((a) => [a.id, { name: a.name, autoNamed: a.autoNamed }]));
   const members = new Map<number, number[]>(archetypes.map((a) => [a.id, []]));
   for (const deck of decks) {
     if (deck.archetypeId !== null) members.get(deck.archetypeId)?.push(deck.id);
@@ -70,6 +74,7 @@ export async function classifyFormat(db: Db, cards: CardDatabase, format: string
   for (const cluster of clusters) {
     const name = uniqueName(suggestName(cluster.signature, signatures.filter((s) => s !== cluster.signature)), taken);
     const id = await createArchetype(db, format, name, toSignature(cluster.signature));
+    names.set(id, { name, autoNamed: true });
     const deckIds = cluster.members.map((index) => pending[index]!);
     members.set(id, deckIds);
     for (const deckId of deckIds) {
@@ -94,6 +99,15 @@ export async function classifyFormat(db: Db, cards: CardDatabase, format: string
       }
     }
     await updateArchetype(db, archetypeId, toSignature(signature), sample);
+
+    // Nome automático = grupo de cores + as cartas que distinguem o arquétipo. As cartas ficam fixas
+    // desde a criação; o grupo de cores acompanha as listas, que podem ganhar ou perder uma cor.
+    const current = names.get(archetypeId);
+    if (current?.autoNamed) {
+      const base = current.name.split(AUTO_NAME_SEPARATOR).pop()!;
+      const named = `${colorGroupName(deckColors(signature, cards))}${AUTO_NAME_SEPARATOR}${base}`;
+      if (named !== current.name) await setAutoName(db, archetypeId, named);
+    }
   }
 
   const classified = decks.filter((d) => d.archetypeId !== null).length + assignments.length;

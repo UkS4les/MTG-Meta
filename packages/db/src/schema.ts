@@ -155,4 +155,9 @@ export const MIGRATIONS: readonly string[] = [
   );
   create index user_decks_user on user_decks(user_id, updated_at desc);
   `,
+  `
+  -- Quem administra esta instalação: renomeia arquétipos e redefine senhas. É a primeira conta criada.
+  alter table users add column is_admin boolean not null default false;
+  update users set is_admin = true where id = (select id from users order by created_at, id limit 1);
+  `,
 ];

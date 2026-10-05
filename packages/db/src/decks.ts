@@ -155,6 +155,15 @@ export async function renameArchetype(db: Db, id: number, name: string): Promise
   return rows.length > 0;
 }
 
+/** Atualiza o nome automático de um arquétipo. Não mexe nos que alguém já nomeou, nem cria nome repetido. */
+export async function setAutoName(db: Db, id: number, name: string): Promise<void> {
+  await db.query(
+    `update archetypes a set name = $2
+     where a.id = $1 and a.auto_named and not exists (select 1 from archetypes o where o.format = a.format and o.name = $2 and o.id <> a.id)`,
+    [id, name],
+  );
+}
+
 export async function assignArchetypes(db: Db, assignments: { deckId: number; archetypeId: number; score: number }[]): Promise<void> {
   if (assignments.length === 0) return;
   await db.query(

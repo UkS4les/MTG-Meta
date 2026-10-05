@@ -3,6 +3,11 @@ import { after, before, describe, it } from 'node:test';
 import { parseDecklist, type Tournament } from '@mtg-meta/core';
 import {
   collectionSummaries,
+  findUserByEmail,
+  listUsers,
+  setAutoName,
+  setPassword,
+  temporaryPassword,
   getArchetypesUsingCard,
   createUserDeck,
   deleteUserDeck,
@@ -298,5 +303,51 @@ describe('arquétipos que usam uma carta', () => {
     const usage = await getArchetypesUsingCard(db, "Lim-Dûl's Vault");
     assert.deepEqual(usage.map((u) => [u.id, u.copies, Math.round(u.share * 10) / 10]), [[big, 3.5, 0.2], [small, 1, 0]]);
     assert.deepEqual(await getArchetypesUsingCard(db, 'lim-dul'), []);
+  });
+});
+
+describe('administração', () => {
+  it('a primeira conta é a administradora e as seguintes não', async () => {
+    const users = await listUsers(db);
+    assert.equal(users.filter((u) => u.isAdmin).length, 1);
+    assert.equal(users[0]!.isAdmin, true);
+    const later = (await createUser(db, 'nina@exemplo.com', 'senha-segura'))!;
+    assert.equal(later.isAdmin, false);
+    assert.equal((await findUserByEmail(db, ' NINA@exemplo.com'))?.id, later.id);
+    assert.equal(await findUserByEmail(db, 'ninguem@exemplo.com'), null);
+
+    const fresh = await openDb({ location: 'memory://' });
+    assert.equal((await createUser(fresh, 'a@exemplo.com', 'senha-segura'))!.isAdmin, true);
+    assert.equal((await createUser(fresh, 'b@exemplo.com', 'senha-segura'))!.isAdmin, false);
+    assert.equal((await verifyLogin(fresh, 'a@exemplo.com', 'senha-segura'))?.isAdmin, true);
+    await fresh.close();
+  });
+
+  it('trocar a senha vale na hora e derruba as sessões abertas', async () => {
+    const user = (await createUser(db, 'otto@exemplo.com', 'senha-antiga'))!;
+    const token = await createSession(db, user.id);
+    const temporary = temporaryPassword();
+    assert.match(temporary, /^[a-zA-Z2-9]{12}$/);
+    assert.notEqual(temporary, temporaryPassword());
+
+    assert.equal(await setPassword(db, user.id, temporary), true);
+    assert.equal(await verifyLogin(db, 'otto@exemplo.com', 'senha-antiga'), null);
+    assert.equal((await verifyLogin(db, 'otto@exemplo.com', temporary))?.id, user.id);
+    assert.equal(await getSessionUser(db, token), null);
+    assert.equal(await setPassword(db, '00000000-0000-0000-0000-000000000000', 'qualquer-coisa'), false);
+  });
+
+  it('nome automático só muda em arquétipo que ninguém nomeou e não repete nome', async () => {
+    const insert = async (name: string, auto: boolean) =>
+      (await db.query<{ id: number }>(`insert into archetypes (format, name, signature, auto_named) values ('pioneer', $1, '{}', $2) returning id`, [name, auto]))[0]!.id;
+    const auto = await insert('Carta A / Carta B', true);
+    const curated = await insert('Izzet Phoenix', false);
+    await insert('Izzet — Ocupado', true);
+    await setAutoName(db, auto, 'Izzet — Carta A / Carta B');
+    await setAutoName(db, curated, 'Izzet — Outro');
+    assert.equal((await getArchetype(db, auto))?.name, 'Izzet — Carta A / Carta B');
+    assert.equal((await getArchetype(db, curated))?.name, 'Izzet Phoenix');
+    await setAutoName(db, auto, 'Izzet — Ocupado');
+    assert.equal((await getArchetype(db, auto))?.name, 'Izzet — Carta A / Carta B');
   });
 });

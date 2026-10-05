@@ -1,0 +1,119 @@
+# Confere o projeto a cada envio: testes, tipos, leitor de log contra logs reais,
+# a imagem do Docker de verdade e os atalhos de um clique dos três sistemas.
+name: Verificação
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Testes, tipos e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tipos
+        run: npm run typecheck
+      - name: Testes
+        run: npm test
+      - name: Leitor do log do Arena contra logs reais
+        run: npm run logs:conferir
+      - name: Build de produção
+        run: npm run build
+
+  docker:
+    name: Docker (imagem e atalho do Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sobe o site pelo atalho de um clique
+        # Dois dias de torneios bastam para provar que a ingestão roda dentro do contêiner.
+        run: |
+          echo "INGEST_DAYS=2" > .env
+          ./iniciar.sh < /dev/null
+      - name: Confere as páginas
+        run: |
+          for path in / /meta/standard /cartas /cartas/lightning-bolt /decks /montar /partidas /privacidade /api/decks; do
+            code=$(curl -s -o /tmp/body -w '%{http_code}' "http://localhost:3000$path")
+            echo "$path -> $code"
+            [ "$code" = "200" ] || { echo "::error::$path respondeu $code"; exit 1; }
+          done
+          # O banco de cartas e os torneios precisam ter chegado: a carta tem preço e o meta tem arquétipos.
+          curl -s http://localhost:3000/cartas/lightning-bolt | grep -q 'US\$' || { echo "::error::a página da carta veio sem preço (banco de cartas não carregou)"; exit 1; }
+          curl -s http://localhost:3000/meta/modern | grep -q 'class="archetype"' || { echo "::error::o meta veio sem arquétipos (a ingestão não gravou torneios)"; exit 1; }
+      - name: Os dados sobrevivem a parar e subir de novo
+        run: |
+          ./parar.sh
+          docker compose up -d
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/api/colecao > /dev/null && break
+            sleep 5
+          done
+          curl -s http://localhost:3000/meta/modern | grep -q 'class="archetype"' || { echo "::error::o meta sumiu depois de reiniciar (o volume não guardou os dados)"; exit 1; }
+      - name: Mostra o log do contêiner se algo falhou
+        if: failure()
+        run: |
+          docker compose ps
+          docker compose logs --no-color --tail 80 site | tee /tmp/site.log
+          # As últimas linhas viram anotação, que dá para ler sem abrir o log inteiro.
+          echo "::error title=Fim do log do contêiner::$(tail -25 /tmp/site.log | tr '\n' '|' | cut -c1-3500)"
+
+  atalho-windows:
+    name: Atalhos do Windows (.bat)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Os contêineres Linux não rodam nos servidores Windows do GitHub, então o site não sobe aqui.
+      # O que se prova é que os arquivos são lidos pelo Windows sem erro e avisam certo quando o Docker falta.
+      - name: iniciar.bat sem Docker avisa e sai com erro
+        shell: cmd
+        run: |
+          set "PATH=%SystemRoot%\System32"
+          call iniciar.bat < NUL > saida.txt 2>&1
+          if not errorlevel 1 (type saida.txt & echo ::error::iniciar.bat deveria sair com erro sem o Docker & exit /b 1)
+          type saida.txt
+          findstr /c:"nao esta instalado" saida.txt > NUL || (echo ::error::iniciar.bat nao mostrou o aviso de Docker ausente & exit /b 1)
+      - name: tracker.bat sem a pasta do Arena avisa e sai com erro
+        shell: cmd
+        run: |
+          set "PATH=%SystemRoot%\System32"
+          call tracker.bat < NUL > saida.txt 2>&1
+          if not errorlevel 1 (type saida.txt & echo ::error::tracker.bat deveria sair com erro sem a pasta do log & exit /b 1)
+          type saida.txt
+          findstr /c:"Nao encontrei a pasta do log" saida.txt > NUL || (echo ::error::tracker.bat nao mostrou o aviso da pasta do log & exit /b 1)
+
+  atalho-macos:
+    name: Atalhos do macOS (.command)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Os servidores macOS do GitHub não têm Docker: prova-se que os atalhos rodam e avisam certo.
+      - name: iniciar.command sem Docker avisa e sai com erro
+        run: |
+          if PATH=/usr/bin:/bin ./iniciar.command < /dev/null > saida.txt 2>&1; then
+            cat saida.txt; echo "::error::iniciar.command deveria sair com erro sem o Docker"; exit 1
+          fi
+          cat saida.txt
+          grep -q "não está instalado" saida.txt || { echo "::error::iniciar.command não mostrou o aviso de Docker ausente"; exit 1; }
+      - name: tracker.command sem a pasta do Arena avisa e sai com erro
+        run: |
+          if PATH=/usr/bin:/bin HOME="$RUNNER_TEMP" ./tracker.command < /dev/null > saida.txt 2>&1; then
+            cat saida.txt; echo "::error::tracker.command deveria sair com erro sem a pasta do log"; exit 1
+          fi
+          cat saida.txt
+          grep -q "Não encontrei a pasta do log" saida.txt || { echo "::error::tracker.command não mostrou o aviso da pasta do log"; exit 1; }

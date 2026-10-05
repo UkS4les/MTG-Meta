@@ -91,6 +91,27 @@ describe('parseArenaLog', () => {
     assert.deepEqual([parsed.matches[0]!.result, parsed.matches[0]!.onPlay], ['loss', false]);
   });
 
+  it('log com identificadores apagados: os dois jogadores parecem ser a pessoa, e vale o lugar das mensagens do jogo', () => {
+    const same = [{ userId: '<redacted>', seat: 1 }, { userId: '<redacted>', seat: 2 }];
+    const log = [login('<redacted>'), room('m7', 'Ladder', same), gre(1, { turnInfo: { turnNumber: 1, activePlayer: 1 }, gameObjects: [card(10, 1), card(20, 2)] }), room('m7', 'Ladder', same, [game(1), match(1)])].join('\n');
+    const [m] = parseArenaLog(log).matches;
+    assert.deepEqual([m!.result, m!.onPlay, m!.opponentCards], ['win', true, [20]]);
+    // Sem nenhuma mensagem do jogo não há como saber o lado: fica de fora em vez de arriscar.
+    const blind = parseArenaLog([login('<redacted>'), room('m8', 'Ladder', same), room('m8', 'Ladder', same, [game(1), match(1)])].join('\n'));
+    assert.deepEqual([blind.matches.length, blind.unresolved], [0, 1]);
+  });
+
+  it('pareamento desfeito pelo servidor (empate sem nenhum jogo) não conta como partida', () => {
+    const log = [login('eu'), room('m10', 'Ladder', [THEM, ME]), room('m10', 'Ladder', [THEM, ME], [{ scope: 'MatchScope_Match', result: 'ResultType_Draw' }])].join('\n');
+    const parsed = parseArenaLog(log);
+    assert.deepEqual([parsed.matches.length, parsed.unfinished], [0, 1]);
+  });
+
+  it('as mensagens do jogo prevalecem sobre o identificador quando discordam', () => {
+    const log = [login('eu'), room('m9', 'Ladder', [THEM, ME]), gre(1, { turnInfo: { turnNumber: 1, activePlayer: 2 } }), room('m9', 'Ladder', [THEM, ME], [game(1), match(1)])].join('\n');
+    assert.equal(parseArenaLog(log).matches[0]!.result, 'win');
+  });
+
   it('não inventa resultado quando não sabe quem é a pessoa, nem conta partida sem fim', () => {
     const log = [
       room('semlado', 'Play', [THEM, ME], [game(1), match(1)]),

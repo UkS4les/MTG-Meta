@@ -7,10 +7,11 @@ import { CardGrid, type GridCard } from '@/components/card-grid';
 import { CardLink } from '@/components/card-link';
 import { ColorPips } from '@/components/color-pips';
 import { CopyButton } from '@/components/copy-button';
+import { RenameArchetype } from '@/components/rename-archetype';
 import { WantButton } from '@/components/want-button';
 import { cardRef } from '@/lib/cards-view';
 import { date, percent } from '@/lib/format';
-import { cardDb, getDb } from '@/lib/server';
+import { cardDb, currentUser, getDb } from '@/lib/server';
 
 interface Props {
   params: Promise<{ formato: string; id: string }>;
@@ -73,6 +74,7 @@ export default async function ArchetypePage({ params }: Props) {
         <ColorPips colors={colors} />
         <WantButton deck={{ id: archetype.id, format, name: archetype.name }} />
       </p>
+      {(await currentUser())?.isAdmin && <RenameArchetype id={archetype.id} name={archetype.name} autoNamed={archetype.autoNamed} />}
       <p className="muted">
         {shares.map(({ period, row }) => `${row ? percent(row.share) : '0%'} em ${period} dias`).join(' · ')}
         {archetype.autoNamed && <span className="tag">nome provisório</span>}

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   buildSignature,
+  colorGroupName,
   deckColors,
   fitsColors,
   classifyDeck,
@@ -147,4 +148,14 @@ test('cardSlug gera endereço estável e getBySlug acha a carta', () => {
   assert.equal(db.getBySlug('lim-dul-s-vault')?.name, "Lim-Dûl's Vault");
   assert.equal(db.getBySlug('nao-existe'), undefined);
   assert.deepEqual(db.all.map((c) => c.name), ['Fire // Ice', "Lim-Dûl's Vault", 'Opt']);
+});
+
+test('colorGroupName usa os nomes da comunidade, em qualquer ordem de entrada', () => {
+  assert.equal(colorGroupName([]), 'Incolor');
+  assert.equal(colorGroupName(['R']), 'Mono-Red');
+  assert.equal(colorGroupName(['R', 'U']), 'Izzet');
+  assert.equal(colorGroupName(['G', 'B']), 'Golgari');
+  assert.equal(colorGroupName(['G', 'R', 'B']), 'Jund');
+  assert.equal(colorGroupName(['W', 'U', 'B', 'R']), '4 cores');
+  assert.equal(colorGroupName(['W', 'U', 'B', 'R', 'G']), '5 cores');
 });

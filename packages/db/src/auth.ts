@@ -10,7 +10,11 @@ export const MIN_PASSWORD_LENGTH = 8;
 export interface User {
   id: string;
   email: string;
+  /** Administra esta instalação (a primeira conta criada). */
+  isAdmin: boolean;
 }
+
+const USER_COLUMNS = 'id, email, is_admin as "isAdmin"';
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -42,19 +46,21 @@ function hashToken(token: string): string {
 /** Cria a conta. Devolve null se o e-mail já estiver cadastrado. */
 export async function createUser(db: Db, email: string, password: string): Promise<User | null> {
   const rows = await db.query<User>(
-    'insert into users (email, password_hash) values ($1, $2) on conflict (email) do nothing returning id, email',
+    // A primeira conta da instalação nasce administradora.
+    `insert into users (email, password_hash, is_admin) values ($1, $2, not exists (select 1 from users where is_admin))
+     on conflict (email) do nothing returning ${USER_COLUMNS}`,
     [normalizeEmail(email), await hashPassword(password)],
   );
   return rows[0] ?? null;
 }
 
 export async function verifyLogin(db: Db, email: string, password: string): Promise<User | null> {
-  const rows = await db.query<User & { password_hash: string }>('select id, email, password_hash from users where email = $1', [
+  const rows = await db.query<User & { password_hash: string }>(`select ${USER_COLUMNS}, password_hash from users where email = $1`, [
     normalizeEmail(email),
   ]);
   const user = rows[0];
   if (!user || !(await checkPassword(password, user.password_hash))) return null;
-  return { id: user.id, email: user.email };
+  return { id: user.id, email: user.email, isAdmin: user.isAdmin };
 }
 
 /** Devolve o token que vai no cookie. */
@@ -71,7 +77,7 @@ export async function createSession(db: Db, userId: string): Promise<string> {
 
 export async function getSessionUser(db: Db, token: string): Promise<User | null> {
   const rows = await db.query<User>(
-    'select u.id, u.email from sessions s join users u on u.id = s.user_id where s.token_hash = $1 and s.expires_at > now()',
+    `select u.id, u.email, u.is_admin as "isAdmin" from sessions s join users u on u.id = s.user_id where s.token_hash = $1 and s.expires_at > now()`,
     [hashToken(token)],
   );
   return rows[0] ?? null;
@@ -103,7 +109,7 @@ export async function getApiTokenUser(db: Db, token: string): Promise<User | nul
   if (!token.startsWith(API_TOKEN_PREFIX)) return null;
   const rows = await db.query<User>(
     `update api_tokens t set last_used_at = now() from users u
-     where t.token_hash = $1 and u.id = t.user_id returning u.id, u.email`,
+     where t.token_hash = $1 and u.id = t.user_id returning u.id, u.email, u.is_admin as "isAdmin"`,
     [hashToken(token)],
   );
   return rows[0] ?? null;
@@ -122,4 +128,38 @@ export async function getApiTokenInfo(db: Db, userId: string): Promise<ApiTokenI
 
 export async function revokeApiToken(db: Db, userId: string): Promise<void> {
   await db.query('delete from api_tokens where user_id = $1', [userId]);
+}
+
+/**
+ * Troca a senha e encerra todas as sessões da conta: quem estava logado com a senha antiga sai.
+ * Devolve false se a conta não existe.
+ */
+export async function setPassword(db: Db, userId: string, password: string): Promise<boolean> {
+  const rows = await db.query('update users set password_hash = $2 where id = $1 returning id', [userId, await hashPassword(password)]);
+  if (rows.length === 0) return false;
+  await db.query('delete from sessions where user_id = $1', [userId]);
+  return true;
+}
+
+/** Senha provisória, fácil de ditar: letras e números sem os que se confundem (0/O, 1/l/I). */
+export function temporaryPassword(): string {
+  const alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from(randomBytes(12), (byte) => alphabet[byte % alphabet.length]).join('');
+}
+
+export interface UserSummary {
+  id: string;
+  email: string;
+  isAdmin: boolean;
+  createdAt: string;
+}
+
+export async function listUsers(db: Db): Promise<UserSummary[]> {
+  const rows = await db.query<{ id: string; email: string; is_admin: boolean; created_at: Date }>('select id, email, is_admin, created_at from users order by created_at, id');
+  return rows.map((r) => ({ id: r.id, email: r.email, isAdmin: r.is_admin, createdAt: new Date(r.created_at).toISOString() }));
+}
+
+export async function findUserByEmail(db: Db, email: string): Promise<User | null> {
+  const rows = await db.query<User>(`select ${USER_COLUMNS} from users where email = $1`, [normalizeEmail(email)]);
+  return rows[0] ?? null;
 }

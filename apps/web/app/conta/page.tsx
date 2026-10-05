@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { collectionSummaries, getApiTokenInfo } from '@mtg-meta/db';
+import { collectionSummaries, getApiTokenInfo, listUsers } from '@mtg-meta/db';
 import { signOut } from '@/app/actions';
 import { integer, PLATFORM_PT } from '@/lib/format';
 import { currentUser, getDb } from '@/lib/server';
 import { DeleteAccountForm } from './delete-form';
+import { PasswordForm } from './password-form';
+import { UsersAdmin } from './users-admin';
 import { TrackerKey } from './tracker-key';
 
 export const metadata: Metadata = { title: 'Conta' };
@@ -14,12 +16,15 @@ export default async function AccountPage() {
   const user = await currentUser();
   if (!user) redirect('/entrar');
   const db = await getDb();
-  const [collections, trackerKey] = await Promise.all([collectionSummaries(db, user.id), getApiTokenInfo(db, user.id)]);
+  const [collections, trackerKey, users] = await Promise.all([collectionSummaries(db, user.id), getApiTokenInfo(db, user.id), user.isAdmin ? listUsers(db) : []]);
 
   return (
     <>
       <h1>Conta</h1>
-      <p className="muted">{user.email}</p>
+      <p className="muted">
+        {user.email}
+        {user.isAdmin && <span className="tag">administrador</span>}
+      </p>
 
       <div className="card">
         <strong>Coleções salvas</strong>
@@ -52,6 +57,20 @@ export default async function AccountPage() {
         sem você precisar enviar o log. Ele usa uma chave no lugar da sua senha, e a chave só serve para enviar partidas.
       </p>
       <TrackerKey info={trackerKey} />
+
+      <h2>Trocar senha</h2>
+      <PasswordForm />
+
+      {user.isAdmin && (
+        <>
+          <h2>Contas desta instalação</h2>
+          <p className="muted small">
+            Você é o administrador porque criou a primeira conta. O site não envia e-mails, então quem esquecer a senha precisa pedir a você uma
+            senha provisória. Como administrador você também pode renomear arquétipos, na página de cada um.
+          </p>
+          <UsersAdmin users={users} selfId={user.id} />
+        </>
+      )}
 
       <h2>Apagar conta</h2>
       <p className="muted small">Remove o e-mail, a senha, as coleções e as partidas salvas. Não dá para desfazer.</p>

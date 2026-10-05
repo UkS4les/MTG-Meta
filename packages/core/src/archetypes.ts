@@ -49,6 +49,27 @@ export function deckColors(cards: Iterable<[string, number]>, db: CardDatabase):
   return COLORS.filter((color) => total > 0 && (copies.get(color) ?? 0) / total >= COLOR_SHARE);
 }
 
+const COLOR_GROUPS: Record<string, string> = {
+  W: 'Mono-White', U: 'Mono-Blue', B: 'Mono-Black', R: 'Mono-Red', G: 'Mono-Green',
+  WU: 'Azorius', UB: 'Dimir', BR: 'Rakdos', RG: 'Gruul', WG: 'Selesnya',
+  WB: 'Orzhov', UR: 'Izzet', BG: 'Golgari', WR: 'Boros', UG: 'Simic',
+  WUB: 'Esper', UBR: 'Grixis', BRG: 'Jund', WRG: 'Naya', WUG: 'Bant',
+  WBG: 'Abzan', WUR: 'Jeskai', UBG: 'Sultai', WBR: 'Mardu', URG: 'Temur',
+};
+
+/**
+ * Nome que a comunidade dá à combinação de cores: "Izzet" para azul e vermelho, "Jund" para preto,
+ * vermelho e verde. São os nomes usados em inglês e em português, por isso não são traduzidos.
+ */
+export function colorGroupName(colors: readonly Color[]): string {
+  const key = COLORS.filter((color) => colors.includes(color)).join('');
+  if (key === '') return 'Incolor';
+  return COLOR_GROUPS[key] ?? `${key.length} cores`;
+}
+
+/** Separa o grupo de cores do resto no nome automático de um arquétipo: "Izzet — Lava Dart / Cutter". */
+export const AUTO_NAME_SEPARATOR = ' — ';
+
 /** O deck cabe nas cores escolhidas? Decks incolores cabem em qualquer escolha. */
 export function fitsColors(deck: readonly Color[], chosen: readonly Color[]): boolean {
   return deck.every((color) => chosen.includes(color));

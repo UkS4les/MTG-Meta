@@ -65,7 +65,7 @@ export async function MetaView({ format, period }: { format: FormatKey; period: 
           {hasAutoNames && (
             <p className="small muted">
               Os arquétipos são agrupados automaticamente por semelhança entre as listas. Enquanto ninguém dá o nome usado pela comunidade,
-              cada um aparece com as duas cartas que mais o distinguem dos outros.
+              cada um aparece com o nome da combinação de cores e as duas cartas que mais o distinguem dos outros.
             </p>
           )}
           <p className="small muted">

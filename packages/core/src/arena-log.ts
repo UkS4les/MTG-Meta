@@ -140,6 +140,8 @@ interface OpenMatch {
   startedAt: string | null;
   deck: ArenaDeck | null;
   localSeat: number | null;
+  /** O lugar veio das mensagens do jogo (certeza) e não só da comparação de identificadores (palpite). */
+  seatConfirmed: boolean;
   /** Lugar → time. No 1x1 costumam ser iguais, mas o resultado vem por time. */
   teams: Map<number, number>;
   /** Número do jogo → lugar de quem jogou o primeiro turno. */
@@ -185,17 +187,21 @@ export function parseArenaLog(text: string): ArenaLogResult {
 
     if (!open || open.id !== id) {
       if (open) result.unfinished++;
-      open = { id, eventId: '', startedAt: toIso(payload.timestamp), deck: null, localSeat: null, teams: new Map(), starters: new Map(), gameNumber: 1, seen: new Map() };
+      open = { id, eventId: '', startedAt: toIso(payload.timestamp), deck: null, localSeat: null, seatConfirmed: false, teams: new Map(), starters: new Map(), gameNumber: 1, seen: new Map() };
     }
     const match = open;
+    const sameUser: number[] = [];
     for (const player of asArray(config.reservedPlayers)) {
       if (!isObject(player)) continue;
       const seat = asInt(player.systemSeatId);
       if (seat === null) continue;
       match.teams.set(seat, asInt(player.teamId) ?? seat);
       match.eventId ||= asString(player.eventId) ?? '';
-      if (localUserId !== null && player.userId === localUserId) match.localSeat = seat;
+      if (localUserId !== null && player.userId === localUserId) sameUser.push(seat);
     }
+    // Só vale se apontar para um lugar só: em logs com os identificadores apagados, os dois jogadores
+    // aparecem com o mesmo texto no lugar do identificador.
+    if (!match.seatConfirmed && sameUser.length === 1) match.localSeat = sameUser[0]!;
     match.eventId = asString(config.eventId) ?? match.eventId;
     match.deck ??= decks.get(match.eventId) ?? lastDeck;
 
@@ -208,6 +214,7 @@ export function parseArenaLog(text: string): ArenaLogResult {
       return;
     }
 
+    let games = 0;
     let gamesWon = 0;
     let gamesLost = 0;
     let matchResult: MatchResult | null = null;
@@ -216,11 +223,17 @@ export function parseArenaLog(text: string): ArenaLogResult {
       const winner = asInt(entry.winningTeamId);
       const outcome: MatchResult = entry.result === 'ResultType_Draw' || winner === null ? 'draw' : winner === localTeam ? 'win' : 'loss';
       if (entry.scope === 'MatchScope_Game') {
+        games++;
         if (outcome === 'win') gamesWon++;
         else if (outcome === 'loss') gamesLost++;
       } else if (entry.scope === 'MatchScope_Match') {
         matchResult = outcome;
       }
+    }
+    // Partida encerrada pelo servidor antes de qualquer jogo (pareamento desfeito): não foi jogada.
+    if (games === 0 && matchResult !== 'win' && matchResult !== 'loss') {
+      result.unfinished++;
+      return;
     }
     // Sem a linha do resultado da partida, vale o placar dos jogos.
     matchResult ??= gamesWon > gamesLost ? 'win' : gamesLost > gamesWon ? 'loss' : gamesWon + gamesLost > 0 ? 'draw' : null;
@@ -252,9 +265,14 @@ export function parseArenaLog(text: string): ArenaLogResult {
     const match = open;
     for (const message of asArray(event.greToClientMessages)) {
       if (!isObject(message)) continue;
-      // Cada mensagem diz a quem foi endereçada; neste log, sempre ao lugar da própria pessoa.
+      // Cada mensagem diz a quem foi endereçada, e o log só tem as que chegaram a este computador:
+      // uma mensagem para um lugar só diz qual é o da pessoa, com mais certeza do que o identificador.
       const seats = asArray(message.systemSeatIds);
-      if (match.localSeat === null && seats.length === 1) match.localSeat = asInt(seats[0]);
+      const only = seats.length === 1 ? asInt(seats[0]) : null;
+      if (!match.seatConfirmed && only !== null) {
+        match.localSeat = only;
+        match.seatConfirmed = true;
+      }
 
       const state = isObject(message.gameStateMessage) ? message.gameStateMessage : null;
       if (!state) continue;

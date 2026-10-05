@@ -2083,6 +2083,26 @@ tr:hover .thumbs .card-img:last-child,
   border-top: 1px solid var(--border);
 }
 
+/* Renomear arquétipo (administrador) */
+
+.rename-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.rename-form input[type='text'] {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.wanted-list form {
+  display: inline;
+}
+
 /* Decks marcados como objetivo */
 
 .want-button {

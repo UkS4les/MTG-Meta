@@ -57,7 +57,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </p>
             <p>
               Dados de cartas e preços: <a href="https://scryfall.com">Scryfall</a>. Listas de torneios: <a href="https://www.mtgo.com/decklists">mtgo.com</a>,
-              via <a href="https://github.com/modometa/modometa-mtgo-data">modometa-mtgo-data</a>. Gratuito, sem cadastro obrigatório.
+              via <a href="https://github.com/modometa/modometa-mtgo-data">modometa-mtgo-data</a>. Gratuito, sem cadastro obrigatório.{' '}
+              <Link href="/privacidade">Privacidade</Link>.
             </p>
           </div>
         </footer>
