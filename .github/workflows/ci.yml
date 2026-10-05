@@ -80,14 +80,16 @@ jobs:
       - uses: actions/checkout@v4
       # Os contêineres Linux não rodam nos servidores Windows do GitHub, então o site não sobe aqui.
       # O que se prova é que os arquivos são lidos pelo Windows sem erro e avisam certo quando o Docker falta.
-      - name: iniciar.bat sem Docker avisa e sai com erro
+      - name: iniciar.bat sem o Docker pronto avisa e sai com erro
         shell: cmd
         run: |
           set "PATH=%SystemRoot%\System32"
           call iniciar.bat < NUL > saida.txt 2>&1
           if not errorlevel 1 (type saida.txt & echo ::error::iniciar.bat deveria sair com erro sem o Docker & exit /b 1)
           type saida.txt
-          findstr /c:"nao esta instalado" saida.txt > NUL || (echo ::error::iniciar.bat nao mostrou o aviso de Docker ausente & exit /b 1)
+          rem O servidor do GitHub pode ter um docker.exe dentro do System32; nesse caso o atalho segue
+          rem adiante e para em outro aviso. Qualquer um dos tres prova que o arquivo roda e falha direito.
+          findstr /c:"nao esta instalado" /c:"nao respondeu" /c:"nao conseguiu subir" saida.txt > NUL || (echo ::error::iniciar.bat nao mostrou nenhum dos avisos esperados & exit /b 1)
       - name: tracker.bat sem a pasta do Arena avisa e sai com erro
         shell: cmd
         run: |
@@ -96,6 +98,12 @@ jobs:
           if not errorlevel 1 (type saida.txt & echo ::error::tracker.bat deveria sair com erro sem a pasta do log & exit /b 1)
           type saida.txt
           findstr /c:"Nao encontrei a pasta do log" saida.txt > NUL || (echo ::error::tracker.bat nao mostrou o aviso da pasta do log & exit /b 1)
+      - name: Mostra a saida do atalho se algo falhou
+        if: failure()
+        shell: pwsh
+        run: |
+          $texto = (Get-Content saida.txt -ErrorAction SilentlyContinue | Select-Object -First 15) -join ' | '
+          Write-Output "::error title=Saida do atalho::$texto"
 
   atalho-macos:
     name: Atalhos do macOS (.command)
